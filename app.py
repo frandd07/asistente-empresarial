@@ -2,6 +2,7 @@ import streamlit as st
 from src.rag.retriever import CustomerHistoryRAG
 from src.agents.budget_agent import BudgetCalculatorAgent
 from langchain.schema import HumanMessage, AIMessage
+from datetime import datetime
 import os
 
 
@@ -131,11 +132,19 @@ else:
     if "messages" not in st.session_state:
         st.session_state.messages = []
     
+    if "pdf_ready" not in st.session_state:
+        st.session_state.pdf_ready = False
+    
+    if "pdf_bytes" not in st.session_state:
+        st.session_state.pdf_bytes = None
+    
     # Botón para reiniciar conversación
     col1, col2 = st.columns([5, 1])
     with col2:
         if st.button("🔄 Reiniciar", type="secondary"):
             st.session_state.messages = []
+            st.session_state.pdf_ready = False
+            st.session_state.pdf_bytes = None
             st.rerun()
     
     # Mostrar historial de mensajes
@@ -175,30 +184,73 @@ else:
                     # Añadir respuesta al historial
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     
+                    # Resetear PDF cuando hay nueva respuesta
+                    st.session_state.pdf_ready = False
+                    st.session_state.pdf_bytes = None
+                    
                 except Exception as e:
                     error_msg = f"❌ Error: {str(e)}"
                     st.error(error_msg)
                     st.session_state.messages.append({"role": "assistant", "content": error_msg})
     
-    # Botón para descargar conversación completa
+    # Botones para descargar conversación completa
     if st.session_state.messages:
         st.markdown("---")
         
-        # Generar contenido de descarga
-        download_content = "# Conversación Completa - Presupuesto\n\n"
-        download_content += "════════════════════════════════════════════════\n\n"
-        for msg in st.session_state.messages:
-            role = "👤 USUARIO" if msg["role"] == "user" else "🤖 ASISTENTE"
-            download_content += f"**{role}:**\n{msg['content']}\n\n"
-            download_content += "────────────────────────────────────────────────\n\n"
+        col1, col2 = st.columns(2)
         
-        st.download_button(
-            label="📥 Descargar conversación completa",
-            data=download_content,
-            file_name=f"conversacion_presupuesto_{st.session_state.messages[0]['content'][:20]}.md",
-            mime="text/markdown",
-            type="secondary"
-        )
+        # Botón descargar Markdown
+        with col1:
+            download_content = "# Conversación Completa - Presupuesto\n\n"
+            download_content += "════════════════════════════════════════════════\n\n"
+            for msg in st.session_state.messages:
+                role = "👤 USUARIO" if msg["role"] == "user" else "🤖 ASISTENTE"
+                download_content += f"**{role}:**\n{msg['content']}\n\n"
+                download_content += "────────────────────────────────────────────────\n\n"
+            
+            st.download_button(
+                label="📄 Descargar como Markdown",
+                data=download_content,
+                file_name=f"conversacion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
+                mime="text/markdown",
+                type="secondary"
+            )
+        
+        # Botón para generar y descargar PDF
+        with col2:
+            # Botón para generar PDF
+            if not st.session_state.pdf_ready:
+                if st.button("🔄 Generar PDF Profesional", type="primary", key="generate_pdf"):
+                    with st.spinner("🤖 Generando presupuesto profesional con IA..."):
+                        try:
+                            from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
+                            from src.utils.pdf_generator import create_presupuesto_pdf
+                            
+                            # 1. Usar LLM para limpiar y calcular presupuesto
+                            presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.messages)
+                            
+                            # 2. Generar PDF con el texto limpio
+                            pdf_bytes = create_presupuesto_pdf(presupuesto_limpio)
+                            
+                            # 3. Guardar en session state
+                            st.session_state.pdf_bytes = pdf_bytes
+                            st.session_state.pdf_ready = True
+                            
+                            st.success("✅ PDF generado correctamente")
+                            st.rerun()
+                            
+                        except Exception as e:
+                            st.error(f"❌ Error generando PDF: {str(e)}")
+            
+            # Botón para descargar PDF (solo aparece cuando está listo)
+            if st.session_state.pdf_ready and st.session_state.pdf_bytes:
+                st.download_button(
+                    label="📥 Descargar PDF",
+                    data=st.session_state.pdf_bytes,
+                    file_name=f"presupuesto_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                    mime="application/pdf",
+                    type="primary"
+                )
 
 
 # Footer
