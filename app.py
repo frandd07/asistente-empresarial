@@ -1,7 +1,9 @@
 import streamlit as st
 from src.rag.retriever import CustomerHistoryRAG
 from src.agents.budget_agent import BudgetCalculatorAgent
+from langchain.schema import HumanMessage, AIMessage
 import os
+
 
 # Configuración de la página
 st.set_page_config(
@@ -10,16 +12,19 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # Inicializar sistemas (con cache)
 @st.cache_resource
 def initialize_rag():
     """Inicializa el sistema RAG"""
     return CustomerHistoryRAG()
 
+
 @st.cache_resource
 def initialize_agent():
     """Inicializa el agente de presupuestos"""
     return BudgetCalculatorAgent()
+
 
 # Título y descripción
 st.title("🎨 Asistente Empresarial - Empresa de Pinturas")
@@ -28,6 +33,7 @@ Bienvenido al asistente inteligente de nuestra empresa de pinturas. Puedo ayudar
 - 📋 **Consultar historial de clientes** y trabajos anteriores
 - 💰 **Generar presupuestos** automáticos para nuevos proyectos
 """)
+
 
 # Sidebar para seleccionar funcionalidad
 with st.sidebar:
@@ -55,8 +61,10 @@ with st.sidebar:
     else:
         st.error("❌ Falta API Key")
 
+
 # Separador
 st.markdown("---")
+
 
 # Modo: Consulta de Historial (RAG)
 if mode == "🔍 Consulta de Historial (RAG)":
@@ -104,54 +112,94 @@ if mode == "🔍 Consulta de Historial (RAG)":
         else:
             st.warning("⚠️ Por favor, escribe una consulta")
 
+
 # Modo: Generador de Presupuestos (Agente)
 else:
     st.header("💰 Generador de Presupuestos Automático")
-    st.markdown("El agente calculará presupuestos de forma autónoma basándose en tu descripción.")
+    st.markdown("El agente calculará presupuestos de forma autónoma. Mantén una conversación natural para completar todos los datos.")
     
     # Ejemplos de solicitudes
     with st.expander("💡 Ejemplos de solicitudes"):
         st.markdown("""
-        - Necesito presupuesto para pintar 150 m² de interior con pintura premium
+        - Necesito presupuesto para pintar 150 m² de interior
+        - Quiero presupuesto para 439 metros para mi cliente Ronaldo
         - ¿Cuánto costaría pintar una habitación de 45 metros cuadrados?
-        - Presupuesto para fachada exterior de 200m² con complejidad alta
-        - Quiero pintar 80m² de mi casa, ¿cuánto cuesta?
+        - Presupuesto para fachada exterior de 200m²
         """)
     
-    # Input del usuario
-    request = st.text_area(
-        "Describe tu proyecto:",
-        placeholder="Ejemplo: Necesito presupuesto para pintar 120m² de interior",
-        height=100,
-        key="agent_request"
-    )
+    # Inicializar historial de chat en session_state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
     
-    if st.button("🤖 Generar Presupuesto", type="primary", key="agent_button"):
-        if request:
-            with st.spinner("🤖 El agente está calculando tu presupuesto..."):
+    # Botón para reiniciar conversación
+    col1, col2 = st.columns([5, 1])
+    with col2:
+        if st.button("🔄 Reiniciar", type="secondary"):
+            st.session_state.messages = []
+            st.rerun()
+    
+    # Mostrar historial de mensajes
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # Input del usuario con chat
+    if prompt := st.chat_input("Escribe aquí tu mensaje..."):
+        # Añadir mensaje del usuario al historial
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Mostrar mensaje del usuario
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        # Generar respuesta del agente
+        with st.chat_message("assistant"):
+            with st.spinner("🤖 Pensando..."):
                 try:
                     agent = initialize_agent()
                     
-                    # Capturar output del agente
-                    response = agent.generate_budget(request)
+                    # Convertir historial al formato de LangChain
+                    lc_history = []
+                    for msg in st.session_state.messages[:-1]:  # Excluir el último mensaje
+                        if msg["role"] == "user":
+                            lc_history.append(HumanMessage(content=msg["content"]))
+                        else:
+                            lc_history.append(AIMessage(content=msg["content"]))
+                    
+                    # Generar respuesta con historial
+                    response = agent.generate_budget(prompt, chat_history=lc_history)
                     
                     # Mostrar respuesta
-                    st.success("✅ Presupuesto generado")
-                    st.markdown("### 💵 Tu Presupuesto:")
                     st.markdown(response)
                     
-                    # Botón para descargar
-                    st.download_button(
-                        label="📥 Descargar presupuesto",
-                        data=f"# Presupuesto\n\n**Solicitud:**\n{request}\n\n**Respuesta:**\n{response}",
-                        file_name="presupuesto.md",
-                        mime="text/markdown"
-                    )
+                    # Añadir respuesta al historial
+                    st.session_state.messages.append({"role": "assistant", "content": response})
                     
                 except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
-        else:
-            st.warning("⚠️ Por favor, describe tu proyecto")
+                    error_msg = f"❌ Error: {str(e)}"
+                    st.error(error_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
+    
+    # Botón para descargar conversación completa
+    if st.session_state.messages:
+        st.markdown("---")
+        
+        # Generar contenido de descarga
+        download_content = "# Conversación Completa - Presupuesto\n\n"
+        download_content += "════════════════════════════════════════════════\n\n"
+        for msg in st.session_state.messages:
+            role = "👤 USUARIO" if msg["role"] == "user" else "🤖 ASISTENTE"
+            download_content += f"**{role}:**\n{msg['content']}\n\n"
+            download_content += "────────────────────────────────────────────────\n\n"
+        
+        st.download_button(
+            label="📥 Descargar conversación completa",
+            data=download_content,
+            file_name=f"conversacion_presupuesto_{st.session_state.messages[0]['content'][:20]}.md",
+            mime="text/markdown",
+            type="secondary"
+        )
+
 
 # Footer
 st.markdown("---")
