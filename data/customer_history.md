@@ -68,3 +68,16 @@
   - Cocina: Esmalte epoxi blanco antigrasa (25L)
 - **Coste total**: 3,450€
 - **Observaciones**: Trabajo en agosto con local cerrado. Pintura especial cocina resistente a humedad.
+
+## Cliente: Alfonso
+- **NIF/CIF**: 76548376P
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Tuto, 21, 41740 Sevilla
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-11-27
+- **Trabajo**: Pintura interior de alta calidad
+- **Superficie**: 452 m²
+- **Pintura utilizada**: Interior de alta calidad
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Alta (techos muy altos)

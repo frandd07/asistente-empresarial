@@ -1,9 +1,11 @@
 import streamlit as st
+from src.utils.invoice_pdf_generator import create_invoice_pdf
 from src.rag.retriever import CustomerHistoryRAG
 from src.agents.budget_agent import BudgetCalculatorAgent
 from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
 import os
+
 
 
 # Configuración de la página
@@ -68,9 +70,16 @@ st.markdown("---")
 
 
 # Modo: Consulta de Historial (RAG)
+# Modo: Consulta de Historial (RAG)
 if mode == "🔍 Consulta de Historial (RAG)":
     st.header("🔍 Consulta de Historial de Clientes")
     st.markdown("Pregunta sobre trabajos anteriores, clientes, pinturas utilizadas, costes, etc.")
+    
+    # Inicializar estado para guardar última respuesta RAG y factura
+    if "last_rag_answer" not in st.session_state:
+        st.session_state.last_rag_answer = None
+    if "last_invoice_text" not in st.session_state:
+        st.session_state.last_invoice_text = None
     
     # Ejemplos de consultas
     with st.expander("💡 Ejemplos de consultas"):
@@ -101,6 +110,10 @@ if mode == "🔍 Consulta de Historial (RAG)":
                     st.markdown("### 📝 Respuesta:")
                     st.markdown(result["answer"])
                     
+                    # Guardar última respuesta para usarla como base de factura
+                    st.session_state.last_rag_answer = result["answer"]
+                    st.session_state.last_invoice_text = None  # reset
+                    
                     # Mostrar documentos fuente (opcional)
                     with st.expander("📚 Ver documentos fuente"):
                         for i, doc in enumerate(result["source_documents"], 1):
@@ -112,7 +125,46 @@ if mode == "🔍 Consulta de Historial (RAG)":
                     st.error(f"❌ Error: {str(e)}")
         else:
             st.warning("⚠️ Por favor, escribe una consulta")
+    
+    # Si hay una respuesta del RAG, permitir generar factura
+    if st.session_state.last_rag_answer:
+        st.markdown("---")
+        if st.button("🧾 Generar factura de este presupuesto", type="primary", key="invoice_from_rag"):
+            from src.utils.invoice_generator import generate_invoice_from_budget
+            with st.spinner("🧾 Generando factura a partir del presupuesto encontrado..."):
+                try:
+                    factura = generate_invoice_from_budget(st.session_state.last_rag_answer)
+                    st.session_state.last_invoice_text = factura
+                except Exception as e:
+                    st.error(f"❌ Error generando factura: {str(e)}")
+        
+        # Mostrar factura si ya se generó
+        if st.session_state.last_invoice_text:
+            st.markdown("### 🧾 Factura generada")
+            st.markdown(st.session_state.last_invoice_text)
 
+            # Añadir botón para generar PDF de la factura
+            if "invoice_pdf_bytes_rag" not in st.session_state:
+                st.session_state.invoice_pdf_bytes_rag = None
+            
+            if st.button("📄 Crear PDF de la factura", type="secondary", key="create_invoice_pdf_rag"):
+                with st.spinner("📄 Creando PDF..."):
+                    try:
+                        pdf_bytes = create_invoice_pdf(st.session_state.last_invoice_text)
+                        st.session_state.invoice_pdf_bytes_rag = pdf_bytes
+                        st.success("✅ PDF de la factura creado")
+                    except Exception as e:
+                        st.error(f"❌ Error creando PDF de la factura: {str(e)}")
+            
+            if st.session_state.invoice_pdf_bytes_rag:
+                st.download_button(
+                    label="📥 Descargar Factura PDF",
+                    data=st.session_state.invoice_pdf_bytes_rag,
+                    file_name=f"factura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                    mime="application/pdf",
+                    type="primary",
+                    key="download_invoice_pdf_rag_btn"
+                )
 
 # Modo: Generador de Presupuestos (Agente)
 else:
@@ -137,6 +189,12 @@ else:
     
     if "pdf_bytes" not in st.session_state:
         st.session_state.pdf_bytes = None
+
+    if "invoice_text" not in st.session_state:
+        st.session_state.invoice_text = None
+
+    if "invoice_pdf_bytes" not in st.session_state:
+        st.session_state.invoice_pdf_bytes = None
     
     # Botón para reiniciar conversación
     col1, col2 = st.columns([5, 1])
@@ -193,11 +251,11 @@ else:
                     st.error(error_msg)
                     st.session_state.messages.append({"role": "assistant", "content": error_msg})
     
-    # Botones para descargar conversación completa
+    # Botones para descargar conversación completa y guardar en historial
     if st.session_state.messages:
         st.markdown("---")
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)  # 3 columnas ahora
         
         # Botón descargar Markdown
         with col1:
@@ -209,7 +267,7 @@ else:
                 download_content += "────────────────────────────────────────────────\n\n"
             
             st.download_button(
-                label="📄 Descargar como Markdown",
+                label="📄 Markdown",
                 data=download_content,
                 file_name=f"conversacion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown",
@@ -220,8 +278,8 @@ else:
         with col2:
             # Botón para generar PDF
             if not st.session_state.pdf_ready:
-                if st.button("🔄 Generar PDF Profesional", type="primary", key="generate_pdf"):
-                    with st.spinner("🤖 Generando presupuesto profesional con IA..."):
+                if st.button("🔄 Generar PDF", type="primary", key="generate_pdf"):
+                    with st.spinner("🤖 Generando presupuesto profesional..."):
                         try:
                             from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
                             from src.utils.pdf_generator import create_presupuesto_pdf
@@ -236,7 +294,7 @@ else:
                             st.session_state.pdf_bytes = pdf_bytes
                             st.session_state.pdf_ready = True
                             
-                            st.success("✅ PDF generado correctamente")
+                            st.success("✅ PDF generado")
                             st.rerun()
                             
                         except Exception as e:
@@ -251,6 +309,77 @@ else:
                     mime="application/pdf",
                     type="primary"
                 )
+        
+               # Botón para guardar en historial (usa el presupuesto limpio)
+        with col3:
+            if st.button("💾 Guardar en Historial", type="primary", key="save_history"):
+                with st.spinner("💾 Guardando cliente..."):
+                    try:
+                        from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
+                        from src.utils.history_manager import guardar_presupuesto_en_historial
+                        from src.rag.vector_store import rebuild_customer_history_vectorstore  # NUEVO
+
+                        # 1. Obtener el presupuesto limpio (igual que para el PDF)
+                        presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.messages)
+
+                        # 2. Guardar en customer_history.md
+                        resultado = guardar_presupuesto_en_historial(presupuesto_limpio)
+
+                        if resultado:
+                            st.success("✅ Cliente guardado en customer_history.md")
+                            
+                            # 3. Reconstruir índice RAG
+                            with st.spinner("🔄 Actualizando índice RAG..."):
+                                rebuild_customer_history_vectorstore()
+
+                            st.success("✅ Índice RAG actualizado. Ya puedes consultarlo en modo RAG.")
+                            # 4. Limpiar caché de initialize_rag() para que coja el índice nuevo
+                            st.cache_resource.clear()
+                        else:
+                            st.error("❌ No se pudo guardar en el historial")
+
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)}")
+
+        with col4:
+ # 1) Generar factura en texto
+            if st.button("🧾 Generar Factura", type="primary", key="generate_invoice"):
+                with st.spinner("🧾 Generando factura a partir del presupuesto..."):
+                    try:
+                        from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
+                        from src.utils.invoice_generator import generate_invoice_from_budget
+
+                        presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.messages)
+                        factura_texto = generate_invoice_from_budget(presupuesto_limpio)
+
+                        st.session_state.invoice_text = factura_texto
+                        st.session_state.invoice_pdf_bytes = None  # reset
+
+                        st.markdown("### 🧾 Factura generada")
+                        st.markdown(factura_texto)
+
+                    except Exception as e:
+                        st.error(f"❌ Error generando factura: {str(e)}")
+
+            # 2) Crear y descargar PDF si ya hay factura en texto
+            if st.session_state.invoice_text:
+                if st.button("📄 Crear PDF de la factura", type="secondary", key="create_invoice_pdf"):
+                    try:
+                        pdf_bytes = create_invoice_pdf(st.session_state.invoice_text)
+                        st.session_state.invoice_pdf_bytes = pdf_bytes
+                        st.success("✅ PDF de la factura creado")
+                    except Exception as e:
+                        st.error(f"❌ Error creando PDF de la factura: {str(e)}")
+
+                if st.session_state.invoice_pdf_bytes:
+                    st.download_button(
+                        label="📥 Descargar Factura PDF",
+                        data=st.session_state.invoice_pdf_bytes,
+                        file_name=f"factura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                        mime="application/pdf",
+                        type="primary",
+                        key="download_invoice_pdf_btn"
+                    )
 
 
 # Footer

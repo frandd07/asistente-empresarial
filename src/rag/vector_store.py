@@ -4,6 +4,11 @@ from langchain_chroma import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import os
 import chromadb
+from chromadb.api.client import SharedSystemClient
+
+# Limpiar cache interna de Chroma para evitar errores de tenant
+SharedSystemClient.clear_system_cache()
+
 
 class CustomerHistoryVectorStore:
     def __init__(self, markdown_path="data/customer_history.md", persist_directory="./chroma_db"):
@@ -92,3 +97,18 @@ class CustomerHistoryVectorStore:
             search_kwargs={"k": k}
         )
         return retriever
+
+def rebuild_customer_history_vectorstore(
+    markdown_path: str = "data/customer_history.md",
+    persist_directory: str = "./chroma_db",
+):
+    """
+    Helper para reconstruir el vector store de historial de clientes.
+    Se puede llamar desde app.py cada vez que se guarde un nuevo presupuesto.
+    """
+    vs = CustomerHistoryVectorStore(
+        markdown_path=markdown_path,
+        persist_directory=persist_directory,
+    )
+    vs.create_vectorstore()
+    return True
