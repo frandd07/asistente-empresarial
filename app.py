@@ -4,6 +4,7 @@ from src.rag.retriever import CustomerHistoryRAG
 from src.agents.budget_agent import BudgetCalculatorAgent
 from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
+from src.agents.price_margin_agent import PriceMarginAgent
 import os
 
 
@@ -21,6 +22,10 @@ st.set_page_config(
 def initialize_rag():
     """Inicializa el sistema RAG"""
     return CustomerHistoryRAG()
+
+@st.cache_resource
+def initialize_price_agent():
+    return PriceMarginAgent()
 
 
 @st.cache_resource
@@ -44,7 +49,9 @@ with st.sidebar:
     
     mode = st.radio(
         "Selecciona una funcionalidad:",
-        ["🔍 Consulta de Historial (RAG)", "💰 Generador de Presupuestos (Agente)"],
+        ["🔍 Consulta de Historial (RAG)",
+     "💰 Generador de Presupuestos (Agente)",
+     "📈 Asistente de Precios y Márgenes"],
         index=0
     )
     
@@ -69,7 +76,6 @@ with st.sidebar:
 st.markdown("---")
 
 
-# Modo: Consulta de Historial (RAG)
 # Modo: Consulta de Historial (RAG)
 if mode == "🔍 Consulta de Historial (RAG)":
     st.header("🔍 Consulta de Historial de Clientes")
@@ -165,6 +171,47 @@ if mode == "🔍 Consulta de Historial (RAG)":
                     type="primary",
                     key="download_invoice_pdf_rag_btn"
                 )
+elif mode == "📈 Asistente de Precios y Márgenes":
+    st.header("📈 Asistente de Precios y Márgenes")
+    st.markdown("Analiza tu histórico de presupuestos y te sugiere precios mínimos según el margen que marques.")
+
+    target_margin = st.slider(
+        "Margen mínimo de beneficio (%)",
+        min_value=10,
+        max_value=60,
+        value=25,
+        step=5,
+    )
+
+    job_description = st.text_area(
+        "Describe el trabajo que quieres analizar",
+        placeholder="Ejemplo: Pintar 120 m² interior, pintura plástica blanca, cliente nuevo..."
+    )
+
+    if st.button("🔍 Analizar precios y márgenes", type="primary", key="analyze_margins"):
+        if not job_description.strip():
+            st.warning("⚠️ Por favor, describe el trabajo a analizar.")
+        else:
+            with st.spinner("📊 Analizando histórico..."):
+                try:
+                    history_path = "data/customer_history.md"
+                    if not os.path.exists(history_path):
+                        st.error("❌ No se encuentra data/customer_history.md. Guarda antes algún presupuesto.")
+                    else:
+                        with open(history_path, "r", encoding="utf-8") as f:
+                            history_text = f.read()
+
+                        price_agent = initialize_price_agent()
+                        analysis = price_agent.analyze_margins(
+                            history_text=history_text,
+                            job_description=job_description,
+                            target_margin_percent=float(target_margin),
+                        )
+
+                        st.markdown("### 📊 Análisis de precios y márgenes")
+                        st.markdown(analysis)
+                except Exception as e:
+                    st.error(f"❌ Error analizando márgenes: {str(e)}")
 
 # Modo: Generador de Presupuestos (Agente)
 else:
