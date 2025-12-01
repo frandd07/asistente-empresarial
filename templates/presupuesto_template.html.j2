@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .totals {
+            float: right;
+            width: 300px;
+            margin-top: 20px;
+        }
+        .total-row {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .final-total {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>PRESUPUESTO #{{ presupuesto_numero }}</h1>
+        <p>{{ fecha }}</p>
+    </div>
+    
+    <h3>Cliente: {{ cliente_nombre }}</h3>
+    <p>NIF: {{ cliente_nif }}</p>
+    <p>Dirección: {{ cliente_direccion }}</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.concepto }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.precio_unitario }}</td>
+                <td>{{ item.importe }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="totals">
+        <div class="total-row">Subtotal: {{ subtotal }} €</div>
+        <div class="total-row">IVA (21%): {{ iva }} €</div>
+        <div class="final-total">TOTAL: {{ total }} €</div>
+    </div>
+</body>
+</html>

@@ -112,3 +112,59 @@
 - **Cantidad**: [Estimado según presupuesto]
 - **Coste total**: No especificado€
 - **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
+
+
+## Cliente: Jordi
+- **NIF/CIF**: 65487635H
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Jardín número 23
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-12-01
+- **Trabajo**: Pintura exterior
+- **Superficie**: 35 m²
+- **Pintura utilizada**: Exterior
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
+
+
+## Cliente: Nachito Jarana
+- **NIF/CIF**: 65487635H
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Jardín número 23
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-12-01
+- **Trabajo**: Pintura exterior
+- **Superficie**: 35 m²
+- **Pintura utilizada**: Exterior
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
+
+
+## Cliente: Neo Doblas
+- **NIF/CIF**: 65487635H
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Jardín número 23
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-12-01
+- **Trabajo**: Pintura exterior
+- **Superficie**: 35 m²
+- **Pintura utilizada**: Exterior
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
+
+
+## Cliente: Igna Fersan
+- **NIF/CIF**: 65487635H
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Jardín número 23
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-12-01
+- **Trabajo**: Pintura exterior
+- **Superficie**: 35 m²
+- **Pintura utilizada**: Exterior
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
