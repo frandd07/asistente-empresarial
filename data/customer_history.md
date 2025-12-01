@@ -81,3 +81,34 @@
 - **Cantidad**: [Estimado según presupuesto]
 - **Coste total**: No especificado€
 - **Observaciones**: Presupuesto generado automáticamente. Complejidad: Alta (techos muy altos)
+
+## Presupuesto - freddy (01/12/2025 17:41)
+
+**Cliente:** freddy
+**NIF/CIF:** No especificado
+**Email:** No especificado
+
+**Detalles del trabajo:**
+- Área: 120.0 m²
+- Tipo: interior
+- Pintura: plástica
+- Zona: Interior
+
+**Total con IVA:** 2254.11 €
+
+---
+
+
+
+## Cliente: Freddy Mercury
+- **NIF/CIF**: 65487653B
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Loco, 23, 41740
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-12-01
+- **Trabajo**: Pintura interior
+- **Superficie**: 120 m²
+- **Pintura utilizada**: Interior
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
