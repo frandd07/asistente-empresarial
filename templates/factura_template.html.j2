@@ -2,290 +2,206 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Factura</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @page {
+            size: A4;
+            margin: 1cm;
         }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #2c3e50;
-            background: white;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-            background: white;
-        }
-        
-        /* HEADER */
-        .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            padding: 30px;
-            margin: -40px -40px 40px -40px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 36px;
-            margin-bottom: 5px;
-            color: #ff6b6b;
-        }
-        
-        .header .number {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        /* BADGE */
-        .badge {
-            display: inline-block;
-            background: #ff6b6b;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        
-        /* SECTIONS */
-        .section {
-            margin-bottom: 30px;
-        }
-        
-        .section-title {
-            font-size: 13px;
-            color: #ff6b6b;
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ff6b6b;
-        }
-        
-        /* INFO BOXES */
-        .info-box {
-            background: #fff5f5;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #ff6b6b;
-            border-radius: 4px;
-        }
-        
-        .info-box p {
-            margin: 5px 0;
-            font-size: 13px;
-        }
-        
-        .info-box strong {
-            color: #1a1a2e;
-            display: inline-block;
-            width: 120px;
-        }
-        
-        /* TABLE */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        
-        thead {
-            background: #1a1a2e;
-            color: white;
-        }
-        
-        th {
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
+            font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+            color: #333;
             font-size: 12px;
-            text-transform: uppercase;
         }
-        
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ecf0f1;
-            font-size: 13px;
+        .container {
+            width: 100%;
         }
-        
-        th.align-right,
-        td.align-right {
+        .header, .footer {
+            text-align: center;
+            width: 100%;
+            position: fixed;
+        }
+        .header {
+            top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .footer {
+            bottom: 0;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-size: 10px;
+            color: #777;
+        }
+        .company-logo {
+            max-width: 150px;
+            max-height: 70px;
+        }
+        .document-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
             text-align: right;
         }
-        
-        tbody tr:hover {
-            background: #fff5f5;
-        }
-        
-        /* TOTALS BOX */
-        .totals {
-            float: right;
-            width: 350px;
-            background: #fff5f5;
-            border: 2px solid #ff6b6b;
-            border-radius: 4px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .total-row {
+        .details {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-            font-size: 13px;
+            margin-top: 40px;
+            margin-bottom: 40px;
         }
-        
-        .total-row.final {
-            background: #1a1a2e;
-            color: white;
-            padding: 15px;
-            margin: 15px -20px -20px -20px;
-            border: none;
-            border-radius: 0 0 2px 2px;
+        .company-details, .client-details {
+            width: 48%;
+        }
+        .details h3 {
+            font-size: 14px;
             font-weight: bold;
-            font-size: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .total-row strong {
-            font-weight: bold;
-        }
-        
-        .total-row:last-child {
-            border-bottom: none;
-        }
-        
-        /* PAYMENT TERMS */
-        .payment-terms {
-            clear: both;
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 30px 0;
-            border-radius: 4px;
-        }
-        
-        .payment-terms h3 {
-            font-size: 13px;
-            color: #856404;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
             margin-bottom: 10px;
         }
-        
-        .payment-terms p {
-            font-size: 12px;
-            color: #856404;
-            margin: 5px 0;
+        .details p {
+            margin: 4px 0;
+            line-height: 1.6;
         }
-        
-        /* FOOTER */
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #ecf0f1;
-            text-align: center;
-            font-size: 10px;
-            color: #7f8c8d;
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .items-table thead {
+            background-color: #f8f9fa;
+        }
+        .items-table th {
+            font-weight: bold;
+        }
+        .items-table .text-right {
+            text-align: right;
+        }
+        .totals {
+            margin-top: 30px;
+            float: right;
+            width: 40%;
+        }
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .totals-table td {
+            padding: 8px;
+        }
+        .totals-table .label {
+            text-align: right;
+            font-weight: bold;
+        }
+        .totals-table .value {
+            text-align: right;
+            width: 100px;
+        }
+        .totals-table .total-row {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .payment-terms {
+            margin-top: 120px; /* Adjust based on totals height */
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .payment-terms h4 {
+            font-weight: bold;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <p>PINTURAS PROFESIONALES S.L. - Facturación</p>
+    </div>
+
     <div class="container">
-        <!-- HEADER -->
-        <div class="header">
-            <h1>FACTURA</h1>
-            <div class="number">#{{ factura_numero }} | {{ fecha }}</div>
+        <h1 class="document-title">FACTURA</h1>
+
+        <div style="text-align: right; margin-bottom: 30px;">
+            <p><strong>Nº Factura:</strong> {{ factura_numero }}</p>
+            <p><strong>Fecha:</strong> {{ fecha }}</p>
         </div>
-        
-        <div class="badge">⚖️ DOCUMENTO LEGAL - ORIGINAL</div>
-        
-        <!-- DATOS EMPRESA Y CLIENTE -->
-        <div class="section">
-            <div class="section-title">Datos Fiscales de la Empresa</div>
-            <div class="info-box">
-                <p><strong>Empresa:</strong> Pintura Express S.L.</p>
-                <p><strong>CIF:</strong> A12345678</p>
-                <p><strong>Dirección:</strong> Calle Principal, 123 | 28001 Madrid</p>
-                <p><strong>Teléfono:</strong> +34 912 345 678</p>
-                <p><strong>Email:</strong> facturacion@pinturaexpress.com</p>
+
+        <div class="details">
+            <div class="company-details">
+                <h3>Datos Fiscales</h3>
+                <p><strong>PINTURAS PROFESIONALES S.L.</strong></p>
+                <p>CIF: B12345678</p>
+                <p>Calle del Pintor 23, 28015 Madrid</p>
+                <p>+34 910 123 456</p>
+                <p>facturacion@pinturaspro.es</p>
+            </div>
+            <div class="client-details">
+                <h3>Cliente</h3>
+                <p><strong>{{ cliente_nombre }}</strong></p>
+                <p>NIF/CIF: {{ cliente_nif }}</p>
+                <p>{{ cliente_direccion }}</p>
+                <p>{{ cliente_email }}</p>
             </div>
         </div>
-        
-        <div class="section">
-            <div class="section-title">Datos del Cliente</div>
-            <div class="info-box">
-                <p><strong>Nombre:</strong> {{ cliente_nombre }}</p>
-                <p><strong>NIF/CIF:</strong> {{ cliente_nif }}</p>
-                <p><strong>Dirección:</strong> {{ cliente_direccion }}</p>
-                <p><strong>Email:</strong> {{ cliente_email }}</p>
-            </div>
-        </div>
-        
-        <!-- TABLA DE SERVICIOS -->
-        <div class="section">
-            <div class="section-title">Servicios Prestados</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Concepto</th>
-                        <th class="align-right">Cantidad</th>
-                        <th class="align-right">Precio Unitario</th>
-                        <th class="align-right">Importe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                    <tr>
-                        <td><strong>{{ item.concepto }}</strong></td>
-                        <td class="align-right">{{ item.cantidad }}</td>
-                        <td class="align-right">{{ item.precio_unitario }}</td>
-                        <td class="align-right"><strong>{{ item.importe }}</strong></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Precio Unitario</th>
+                    <th class="text-right">Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.concepto }}</td>
+                    <td class="text-right">{{ item.cantidad }}</td>
+                    <td class="text-right">{{ item.precio_unitario }}</td>
+                    <td class="text-right">{{ item.importe }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <table class="totals-table">
+                <tr>
+                    <td class="label">Base Imponible</td>
+                    <td class="value">{{ subtotal }} €</td>
+                </tr>
+                <tr>
+                    <td class="label">IVA (21%)</td>
+                    <td class="value">{{ iva }} €</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label">TOTAL</td>
+                    <td class="value">{{ total }} €</td>
+                </tr>
             </table>
         </div>
-        
-        <!-- TOTALES -->
-        <div class="totals">
-            <div class="total-row">
-                <span>Subtotal:</span>
-                <span>{{ subtotal }} €</span>
-            </div>
-            <div class="total-row">
-                <span>IVA (21%):</span>
-                <span>{{ iva }} €</span>
-            </div>
-            <div class="total-row final">
-                <span>TOTAL FACTURA:</span>
-                <span>{{ total }} €</span>
-            </div>
-        </div>
-        
-        <!-- CONDICIONES DE PAGO -->
+
         <div class="payment-terms">
-            <h3>💳 Condiciones de Pago</h3>
-            <p><strong>Plazo:</strong> 30 días desde la fecha de emisión</p>
-            <p><strong>Forma de pago:</strong> Transferencia bancaria</p>
-            <p><strong>Banco:</strong> ES12 1234 5678 90 1234567890</p>
-            <p><strong>Concepto:</strong> Factura {{ factura_numero }}</p>
+            <h4>Condiciones de Pago</h4>
+            <p><strong>Plazo de pago:</strong> 30 días desde la fecha de emisión.</p>
+            <p><strong>Forma de pago:</strong> Transferencia bancaria a la cuenta ES12 1234 5678 9012 3456 7890.</p>
+            <p>Por favor, incluya el número de factura en el concepto de la transferencia.</p>
         </div>
-        
-        <!-- FOOTER -->
-        <div class="footer">
-            <p>Factura generada automáticamente | Válida sin firma según normativa vigente</p>
-            <p>Pintura Express S.L. | CIF: A12345678 | Registro Mercantil de Madrid</p>
-        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>Gracias por su confianza.</p>
     </div>
 </body>
 </html>

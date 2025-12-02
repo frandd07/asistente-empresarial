@@ -25,7 +25,7 @@ from io import BytesIO
 # 1. DEFINIR TOOLS QUE EL AGENTE PUEDE USAR AUTÓNOMAMENTE
 # ============================================================================
 
-@tool
+
 def calcular_presupuesto(
     area_m2: float,
     tipo_pintura: str,
@@ -88,13 +88,15 @@ def calcular_presupuesto(
     
     subtotal = costo_material + costo_mano_obra + sum(costos_adicionales.values())
     
-    # Margen de ganancia (30%)
-    margen = subtotal * 0.30
-    total_sin_iva = subtotal + margen
+    # No se aplica margen de ganancia por solicitud del usuario
+    total_sin_iva = subtotal
     iva = total_sin_iva * 0.21
     total_con_iva = total_sin_iva + iva
     
+    presupuesto_numero = f"PRES-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
     return {
+        "presupuesto_numero": presupuesto_numero,
         "cliente": {
             "nombre": cliente_nombre,
             "nif": cliente_nif,
@@ -112,7 +114,6 @@ def calcular_presupuesto(
             "costo_mano_obra": round(costo_mano_obra, 2),
             "costos_adicionales": {k: round(v, 2) for k, v in costos_adicionales.items()},
             "subtotal_sin_ganancia": round(subtotal, 2),
-            "margen_ganancia": round(margen, 2),
             "total_sin_iva": round(total_sin_iva, 2),
             "iva_21": round(iva, 2),
             "total_con_iva": round(total_con_iva, 2),

@@ -1,80 +1,66 @@
 from datetime import datetime
-import re
 import os
 
-
-def guardar_presupuesto_en_historial(presupuesto_text: str, archivo_path: str = "data/customer_history.md") -> bool:
+def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str = "data/customer_history.md") -> dict:
     """
-    Guarda el presupuesto limpio como nueva entrada en el historial de clientes.
-
-    Se apoya en regex sobre el texto final del presupuesto (ya formateado para el cliente),
-    sin llamar a ningún modelo de IA adicional.
+    Guarda un presupuesto o factura desde un diccionario a un archivo markdown de historial.
+    
+    Args:
+        presupuesto_dict: Diccionario con los datos del presupuesto/factura, incluyendo un campo 'estado' opcional.
+        archivo_path: Ruta al archivo de historial.
+        
+    Returns:
+        Un diccionario indicando el resultado de la operación.
     """
-
     try:
-        # Nombre cliente
-        m = re.search(r"Nombre:\s*(.+?)(?:\n|$)", presupuesto_text)
-        nombre = m.group(1).strip() if m else "No especificado"
+        # Extraer datos del diccionario
+        cliente = presupuesto_dict.get("cliente", {})
+        detalles = presupuesto_dict.get("detalles_trabajo", {})
+        presupuesto = presupuesto_dict.get("presupuesto", {})
+        
+        nombre = cliente.get("nombre", "No especificado")
+        nif = cliente.get("nif", "No especificado")
+        direccion = cliente.get("direccion", "No especificada")
+        email = cliente.get("email", "No especificado")
+        
+        superficie = detalles.get("area_m2", "No especificada")
+        tipo_pintura = detalles.get("tipo_pintura", "No especificada")
+        tipo_trabajo = detalles.get("tipo_trabajo", "No especificado")
+        
+        coste_total = presupuesto.get("total_con_iva", "No especificado")
+        estado_documento = presupuesto_dict.get("estado", "Presupuestado") # Nuevo campo de estado
+        presupuesto_numero = presupuesto_dict.get("presupuesto_numero", "N/A")
+        
+        fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        # NIF/CIF
-        m = re.search(r"NIF/CIF:\s*(.+?)(?:\n|$)", presupuesto_text)
-        nif = m.group(1).strip() if m else "No especificado"
-
-        # Teléfono
-        m = re.search(r"Tel[eé]fono:\s*(.+?)(?:\n|$)", presupuesto_text)
-        telefono = m.group(1).strip() if m else "No especificado"
-
-        # Dirección
-        m = re.search(r"Direcci[oó]n del trabajo:\s*(.+?)(?:\n|$)", presupuesto_text)
-        direccion = m.group(1).strip() if m else "No especificado"
-
-        # Email
-        m = re.search(r"Email:\s*(.+?)(?:\n|$)", presupuesto_text)
-        email = m.group(1).strip() if m else "No especificado"
-
-        # Superficie
-        m = re.search(r"Superficie total:\s*([\d.,]+)\s*m²", presupuesto_text)
-        superficie = m.group(1).replace(",", ".") if m else "No especificado"
-
-        # Tipo de pintura
-        m = re.search(r"Tipo de pintura:\s*(.+?)(?:\n|$)", presupuesto_text)
-        tipo_pintura = m.group(1).strip() if m else "No especificado"
-
-        # Complejidad (solo como observación extra)
-        m = re.search(r"Complejidad:\s*(.+?)(?:\n|$)", presupuesto_text)
-        complejidad = m.group(1).strip() if m else "No especificado"
-
-        # Coste total
-        m = re.search(r"TOTAL PRESUPUESTO:\s*([\d.,]+)\s*€", presupuesto_text)
-        coste_total = m.group(1).replace(",", ".") if m else "No especificado"
-
-        fecha_actual = datetime.now().strftime("%Y-%m-%d")
-
+        # Crear la entrada de historial en formato Markdown
         entrada = f"""
+---
+## Documento: {estado_documento} #{presupuesto_numero}
 
-## Cliente: {nombre}
+- **Fecha**: {fecha_actual}
+- **Cliente**: {nombre}
 - **NIF/CIF**: {nif}
-- **Teléfono**: {telefono}
 - **Dirección**: {direccion}
 - **Email**: {email}
-- **Fecha**: {fecha_actual}
-- **Trabajo**: Pintura {tipo_pintura.lower()}
+- **Trabajo**: {tipo_trabajo.title()} con pintura {tipo_pintura.lower()}
 - **Superficie**: {superficie} m²
-- **Pintura utilizada**: {tipo_pintura}
-- **Cantidad**: [Estimado según presupuesto]
-- **Coste total**: {coste_total}€
-- **Observaciones**: Presupuesto generado automáticamente. Complejidad: {complejidad}
+- **Coste Total (IVA incl.)**: {coste_total} €
+- **Estado**: {estado_documento}
 """
 
-        # Asegurar que existe el directorio data/
+        # Asegurarse de que el directorio existe
         os.makedirs(os.path.dirname(archivo_path), exist_ok=True)
 
+        # Añadir la entrada al archivo de historial
         with open(archivo_path, "a", encoding="utf-8") as f:
             f.write(entrada)
 
-        print(f"✅ Cliente guardado en historial: {nombre}")
-        return True
+        mensaje_exito = f"✅ Documento [{estado_documento} #{presupuesto_numero}] para {nombre} guardado en el historial."
+        print(mensaje_exito)
+        return {"estado": "éxito", "mensaje": mensaje_exito}
 
     except Exception as e:
-        print(f"❌ Error guardando en historial: {e}")
-        return False
+        mensaje_error = f"❌ Error al guardar en el historial: {str(e)}"
+        print(mensaje_error)
+        return {"estado": "error", "error": mensaje_error}

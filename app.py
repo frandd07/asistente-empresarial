@@ -1,164 +1,29 @@
 import streamlit as st
-from src.rag.retriever import CustomerHistoryRAG
-from src.agents.budget_agent import BudgetCalculatorAgent
 from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
-from src.agents.price_margin_agent import PriceMarginAgent
 import os
 import json
 import re
+import glob
+
+from src.agents.router_agent import RouterAgent
+from src.rag.retriever import CustomerHistoryRAG
+from src.agents.budget_agent import BudgetCalculatorAgent
+from src.agents.price_margin_agent import PriceMarginAgent
+from src.agents.autonomous_agent import calcular_presupuesto, generar_pdf_presupuesto_streamlit, generar_pdf_factura_streamlit
+from src.utils.history_manager import guardar_presupuesto_en_historial
+from src.rag.vector_store import rebuild_customer_history_vectorstore
 
 # Configuración de la página
-st.set_page_config(
-    page_title="Asistente Empresarial - Pinturas",
-    page_icon="🎨",
-    layout="wide"
-)
+st.set_page_config(page_title="Asistente Empresarial Unificado", page_icon="💼", layout="wide")
 
-# ============================================================================
-# FUNCIONES AUXILIARES PARA GENERAR PDFs CON ESTILOS
-# ============================================================================
-
-def extraer_datos_presupuesto(texto_presupuesto: str) -> dict:
-    """
-    Extrae datos estructurados del texto del presupuesto para generar PDFs con estilos.
-    """
-    try:
-        # Valores por defecto
-        datos = {
-            "cliente": {
-                "nombre": "Cliente",
-                "nif": "No especificado",
-                "email": "No especificado",
-                "direccion": "No especificada"
-            },
-            "detalles_trabajo": {
-                "area_m2": 100.0,
-                "tipo_pintura": "plástica",
-                "tipo_trabajo": "interior",
-                "zona": "Interior"
-            },
-            "presupuesto": {
-                "costo_material": 850.0,
-                "costo_mano_obra": 150.0,
-                "costos_adicionales": {
-                    "preparación": 127.5,
-                    "transporte": 50.0,
-                    "limpieza_final": 30.0
-                },
-                "subtotal_sin_ganancia": 1207.5,
-                "margen_ganancia": 362.25,
-                "total_sin_iva": 1569.75,
-                "iva_21": 329.65,
-                "total_con_iva": 1899.40
-            },
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        # Extraer nombre del cliente
-        nombre_match = re.search(r'(?:Cliente|Nombre):\s*([^\n]+)', texto_presupuesto, re.IGNORECASE)
-        if nombre_match:
-            datos["cliente"]["nombre"] = nombre_match.group(1).strip()
-        
-        # Extraer NIF
-        nif_match = re.search(r'(?:NIF|CIF):\s*([^\n]+)', texto_presupuesto, re.IGNORECASE)
-        if nif_match:
-            datos["cliente"]["nif"] = nif_match.group(1).strip()
-        
-        # Extraer email
-        email_match = re.search(r'(?:Email|E-mail|Correo):\s*([^\n]+)', texto_presupuesto, re.IGNORECASE)
-        if email_match:
-            datos["cliente"]["email"] = email_match.group(1).strip()
-        
-        # Extraer dirección
-        direccion_match = re.search(r'(?:Dirección|Direccion):\s*([^\n]+)', texto_presupuesto, re.IGNORECASE)
-        if direccion_match:
-            datos["cliente"]["direccion"] = direccion_match.group(1).strip()
-        
-        # Extraer área
-        area_match = re.search(r'(?:Superficie|Área|Area):\s*(\d+(?:\.\d+)?)\s*m', texto_presupuesto, re.IGNORECASE)
-        if area_match:
-            datos["detalles_trabajo"]["area_m2"] = float(area_match.group(1))
-        
-        # Extraer tipo de pintura
-        pintura_match = re.search(r'(?:Tipo de pintura|Pintura):\s*([^\n]+)', texto_presupuesto, re.IGNORECASE)
-        if pintura_match:
-            datos["detalles_trabajo"]["tipo_pintura"] = pintura_match.group(1).strip()
-        
-        # Extraer total con IVA
-        total_match = re.search(r'(?:Total con IVA|TOTAL):\s*€?\s*([\d,]+(?:\.\d{2})?)', texto_presupuesto, re.IGNORECASE)
-        if total_match:
-            total_str = total_match.group(1).replace(',', '')
-            total = float(total_str)
-            datos["presupuesto"]["total_con_iva"] = total
-            
-            # Calcular otros valores proporcionalmente
-            datos["presupuesto"]["total_sin_iva"] = total / 1.21
-            datos["presupuesto"]["iva_21"] = total - datos["presupuesto"]["total_sin_iva"]
-        
-        return datos
-    
-    except Exception as e:
-        st.warning(f"⚠️ No se pudieron extraer todos los datos: {e}")
-        return datos
-
-
-def generar_pdf_presupuesto_con_estilos(texto_presupuesto: str) -> bytes:
-    """
-    Genera PDF de presupuesto con estilos usando xhtml2pdf.
-    """
-    # ❌ ANTES (con @tool que causa error)
-    # from src.agents.autonomous_agent import generar_pdf_presupuesto
-    
-    # ✅ AHORA (sin @tool, funciona perfecto)
-    from src.agents.autonomous_agent import generar_pdf_presupuesto_streamlit
-    
-    # Extraer datos del texto
-    datos = extraer_datos_presupuesto(texto_presupuesto)
-    
-    # Generar PDF
-    resultado = generar_pdf_presupuesto_streamlit(datos)
-    
-    if resultado["estado"] == "éxito":
-        # Leer el archivo generado
-        with open(resultado["ruta_completa"], "rb") as f:
-            return f.read()
-    else:
-        raise Exception(resultado["error"])
-
-
-def generar_pdf_factura_con_estilos(texto_presupuesto: str) -> bytes:
-    """
-    Genera PDF de factura con estilos usando xhtml2pdf.
-    """
-    # ❌ ANTES (con @tool que causa error)
-    # from src.agents.autonomous_agent import generar_pdf_factura
-    
-    # ✅ AHORA (sin @tool, funciona perfecto)
-    from src.agents.autonomous_agent import generar_pdf_factura_streamlit
-    
-    # Extraer datos del texto
-    datos = extraer_datos_presupuesto(texto_presupuesto)
-    
-    # Generar PDF
-    resultado = generar_pdf_factura_streamlit(datos)
-    
-    if resultado["estado"] == "éxito":
-        # Leer el archivo generado
-        with open(resultado["ruta_completa"], "rb") as f:
-            return f.read()
-    else:
-        raise Exception(resultado["error"])
-
-
-
-# ============================================================================
-# INICIALIZACIÓN DE SISTEMAS
-# ============================================================================
+# Inicialización de agentes con cache
+@st.cache_resource
+def initialize_router_agent():
+    return RouterAgent()
 
 @st.cache_resource
 def initialize_rag():
-    """Inicializa el sistema RAG"""
     return CustomerHistoryRAG()
 
 @st.cache_resource
@@ -166,538 +31,440 @@ def initialize_price_agent():
     return PriceMarginAgent()
 
 @st.cache_resource
-def initialize_agent():
-    """Inicializa el agente de presupuestos"""
+def initialize_budget_agent():
     return BudgetCalculatorAgent()
 
-# ============================================================================
-# INTERFAZ PRINCIPAL
-# ============================================================================
 
-# Título y descripción
-st.title("🎨 Asistente Empresarial - Empresa de Pinturas")
-st.markdown("""
-Bienvenido al asistente inteligente de nuestra empresa de pinturas. Puedo ayudarte con:
-- 📋 **Consultar historial de clientes** y trabajos anteriores
-- 💰 **Generar presupuestos** automáticos para nuevos proyectos
-- 🤖 **Agente autónomo** que genera TODO automáticamente
-""")
-
-# Sidebar para seleccionar funcionalidad
-with st.sidebar:
-    st.header("⚙️ Opciones")
-    
-    mode = st.radio(
-        "Selecciona una funcionalidad:",
-        [
-            "🔍 Consulta de Historial (RAG)",
-            "💰 Generador de Presupuestos (Manual)",
-            "📈 Asistente de Precios y Márgenes",
-            "🤖 Agente Autónomo (TODO Automático)"
-        ],
-        index=3  # Por defecto el autónomo
-    )
-    
-    st.markdown("---")
-    st.markdown("### 📊 Información del Sistema")
-    
-    if mode == "🤖 Agente Autónomo (TODO Automático)":
-        st.success("""
-        **Modo Autónomo Activo:**
+def buscar_presupuesto_por_rag(prompt: str):
+    """
+    Usa RAG para buscar presupuestos pendientes y luego localiza el archivo JSON.
+    """
+    try:
+        rag = initialize_rag()
         
-        ✓ Conversación natural
-        ✓ El agente pregunta lo que necesite
-        ✓ PDFs con estilos profesionales
-        ✓ Todo automático
-        """)
-    else:
-        st.info("""
-        **Tecnologías:**
-        - LangChain + OpenRouter
-        - ChromaDB (Vector Store)
-        - xhtml2pdf (PDFs profesionales)
-        - Agentes autónomos
-        """)
+        # Construir query optimizada para RAG
+        query = f"Busca presupuestos pendientes (estado: Presupuestado) para: {prompt}"
+        
+        result = rag.query(query)
+        respuesta_rag = result.get("answer", "")
+        
+        if not respuesta_rag or "no" in respuesta_rag.lower():
+            return None
+        
+        # Extraer el número de presupuesto de la respuesta RAG usando regex
+        match = re.search(r'PRES-\d{14}', respuesta_rag)
+        
+        if not match:
+            return None
+        
+        presupuesto_numero = match.group(0)
+        
+        # Localizar el archivo JSON correspondiente
+        json_path = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero}.json")
+        
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+                # Verificar que esté en estado "Presupuestado"
+                if data.get("estado", "").lower() == "presupuestado":
+                    return {
+                        "path": json_path,
+                        "data": data,
+                        "numero": presupuesto_numero
+                    }
+        
+        return None
     
-    # Verificar API key
+    except Exception as e:
+        print(f"Error en búsqueda RAG de presupuesto: {e}")
+        return None
+
+
+def buscar_factura_por_rag(prompt: str):
+    """
+    Usa RAG para buscar facturas pendientes de pago y luego localiza el archivo JSON.
+    """
+    try:
+        rag = initialize_rag()
+        
+        # Construir query optimizada para RAG
+        query = f"Busca facturas pendientes de pago (estadoPago: Pendiente) para: {prompt}"
+        
+        result = rag.query(query)
+        respuesta_rag = result.get("answer", "")
+        
+        if not respuesta_rag or "no" in respuesta_rag.lower():
+            return None
+        
+        # Extraer el número de presupuesto/factura de la respuesta RAG
+        match = re.search(r'PRES-\d{14}', respuesta_rag)
+        
+        if not match:
+            return None
+        
+        presupuesto_numero = match.group(0)
+        
+        # Localizar el archivo JSON correspondiente
+        json_path = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero}.json")
+        
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+                # Verificar que esté pendiente de pago
+                if data.get("estadoPago", "").lower() == "pendiente":
+                    return {
+                        "path": json_path,
+                        "data": data,
+                        "numero": presupuesto_numero
+                    }
+        
+        return None
+    
+    except Exception as e:
+        print(f"Error en búsqueda RAG de factura: {e}")
+        return None
+
+
+def handle_mark_as_paid(budget_dict, budget_json_path, chat_history):
+    """Marca una factura como pagada en el archivo JSON y actualiza el historial."""
+    try:
+        # Cargar el JSON actual para asegurar que tenemos la última versión
+        with open(budget_json_path, 'r', encoding='utf-8') as f:
+            current_budget_data = json.load(f)
+        
+        current_budget_data["estadoPago"] = "Pagada"
+        current_budget_data["fechaPago"] = datetime.now().isoformat()
+        
+        with open(budget_json_path, 'w', encoding='utf-8') as f:
+            json.dump(current_budget_data, f, indent=4, ensure_ascii=False)
+        
+        st.session_state.messages.append({"role": "assistant", "content": f"✅ Factura {current_budget_data['presupuesto_numero']} marcada como PAGADA."})
+        
+        # Registrar en el historial de clientes
+        historial_entrada_pagada = current_budget_data.copy()
+        historial_entrada_pagada["estado"] = "Factura Pagada"
+        guardar_historial_resultado = guardar_presupuesto_en_historial(historial_entrada_pagada)
+        
+        if guardar_historial_resultado["estado"] == "éxito":
+            rebuild_customer_history_vectorstore()
+            st.cache_resource.clear()
+            st.session_state.messages.append({"role": "assistant", "content": "Historial de cliente actualizado (Factura Pagada)."})
+        else:
+            st.session_state.messages.append({"role": "assistant", "content": f"Error actualizando historial: {guardar_historial_resultado['error']}"})
+        
+        st.session_state.current_task = None
+        st.session_state.rag_refresh = True
+        
+    except Exception as e:
+        st.session_state.messages.append({"role": "assistant", "content": f"Error al marcar como pagada: {str(e)}"})
+
+
+def handle_accept_budget(budget_dict, budget_json_path, chat_history):
+    """Convierte un presupuesto aceptado en una factura."""
+    try:
+        # Cargar el JSON actual
+        with open(budget_json_path, 'r', encoding='utf-8') as f:
+            current_budget_data = json.load(f)
+        
+        # 1. Generar la factura en PDF
+        invoice_result = generar_pdf_factura_streamlit(current_budget_data)
+        
+        if invoice_result["estado"] == "éxito":
+            with open(invoice_result["ruta_completa"], 'rb') as f:
+                st.session_state.invoice_pdf_bytes = f.read()
+            st.session_state.messages.append({"role": "assistant", "content": f"✅ Factura {invoice_result['archivo']} generada y guardada."})
+        else:
+            st.session_state.messages.append({"role": "assistant", "content": f"Error generando factura: {invoice_result['error']}"})
+            return
+        
+        # 2. Actualizar el estado del presupuesto
+        current_budget_data["estado"] = "Facturado y Pendiente de Pago"
+        current_budget_data["estadoPago"] = "Pendiente"
+        current_budget_data["fechaFacturacion"] = datetime.now().isoformat()
+        
+        with open(budget_json_path, 'w', encoding='utf-8') as f:
+            json.dump(current_budget_data, f, indent=4, ensure_ascii=False)
+        
+        st.session_state.final_budget_dict = current_budget_data
+        st.session_state.messages.append({"role": "assistant", "content": "Estado del presupuesto actualizado a 'Facturado y Pendiente de Pago'."})
+        
+        # 3. Añadir al historial
+        historial_entrada = current_budget_data.copy()
+        historial_entrada["estado"] = "Facturado y Pendiente de Pago"
+        guardar_historial_resultado = guardar_presupuesto_en_historial(historial_entrada)
+        
+        if guardar_historial_resultado["estado"] == "éxito":
+            rebuild_customer_history_vectorstore()
+            st.cache_resource.clear()
+            st.session_state.messages.append({"role": "assistant", "content": "Historial de cliente actualizado (Factura Pendiente)."})
+        else:
+            st.session_state.messages.append({"role": "assistant", "content": f"Error actualizando historial: {guardar_historial_resultado['error']}"})
+        
+        st.session_state.current_task = None
+        st.session_state.task_completed = True
+        st.session_state.rag_refresh = True
+        
+    except Exception as e:
+        st.session_state.messages.append({"role": "assistant", "content": f"Error al aceptar el presupuesto como factura: {str(e)}"})
+
+
+def handle_budget_conversation(prompt, history):
+    """Maneja la conversación para crear un presupuesto."""
+    agent = initialize_budget_agent()
+    response_text = agent.generate_budget(prompt, chat_history=history)
+    
+    try:
+        # Si el agente devuelve JSON, la recopilación de datos ha terminado
+        cleaned_response = response_text.strip().replace("``````", "").strip()
+        data_collected = json.loads(cleaned_response)
+        
+        st.session_state.messages.append({"role": "assistant", "content": "Perfecto! Tengo todos los datos. Procesando todo automáticamente..."})
+        
+        with st.spinner("Calculando presupuesto, generando PDFs y guardando en historial..."):
+            # 1. Calcular
+            final_budget = calcular_presupuesto(**data_collected)
+            final_budget["estado"] = "Presupuestado"
+            st.session_state.final_budget_dict = final_budget
+            
+            # Guardar JSON
+            os.makedirs("data/presupuestos", exist_ok=True)
+            budget_json_path = os.path.join("data/presupuestos", f"presupuesto_{final_budget['presupuesto_numero']}.json")
+            with open(budget_json_path, 'w', encoding='utf-8') as f:
+                json.dump(final_budget, f, indent=4, ensure_ascii=False)
+            
+            st.session_state.budget_json_path = budget_json_path
+            
+            # 2. Generar PDF
+            pdf_result = generar_pdf_presupuesto_streamlit(final_budget)
+            
+            if pdf_result["estado"] == "éxito":
+                with open(pdf_result["ruta_completa"], 'rb') as f:
+                    st.session_state.pdf_bytes = f.read()
+            
+            st.session_state.invoice_pdf_bytes = None
+            
+            # 3. Guardar en historial
+            guardar_resultado = guardar_presupuesto_en_historial(final_budget)
+            
+            if guardar_resultado["estado"] == "éxito":
+                rebuild_customer_history_vectorstore()
+                st.cache_resource.clear()
+                st.session_state.messages.append({"role": "assistant", "content": "✅ Presupuesto generado! Puedes descargarlo. Si deseas aceptarlo y generar la factura, házmelo saber."})
+                st.session_state.current_task = None
+                st.session_state.task_completed = True
+            
+    except json.JSONDecodeError:
+        st.session_state.messages.append({"role": "assistant", "content": response_text})
+
+
+def handle_history_query(prompt):
+    """Maneja una consulta al historial de clientes."""
+    rag = initialize_rag()
+    with st.spinner("Buscando en el historial..."):
+        result = rag.query(prompt)
+    
+    response = result.get("answer", "No he encontrado información sobre eso.")
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.session_state.last_rag_response_content = response
+    st.session_state.current_task = None
+
+
+def handle_margins_query(prompt, history_text):
+    """Maneja una consulta sobre márgenes de beneficio."""
+    price_agent = initialize_price_agent()
+    
+    full_context = f"Historial de trabajos:\n{history_text}\n\nConsulta del usuario: {prompt}"
+    
+    with st.spinner("Analizando precios y márgenes..."):
+        analysis = price_agent.analyze_margins(
+            history_text=history_text,
+            job_description=prompt,
+            target_margin_percent=25.0,
+        )
+    
+    st.session_state.messages.append({"role": "assistant", "content": analysis})
+    st.session_state.current_task = None
+
+
+# ============== UI PRINCIPAL ==============
+
+st.title("💼 Asistente Empresarial Unificado")
+st.markdown("Soy tu asistente inteligente. Puedes pedirme un presupuesto, consultar el historial de un cliente o analizar márgenes de un trabajo, todo en este chat.")
+
+# Sidebar
+with st.sidebar:
+    st.header("ℹ️ Información")
+    st.info("""
+    Este es un asistente unificado. Simplemente escribe lo que necesitas:
+    
+    - **Para un presupuesto**: "Necesito presupuesto para 100m² para Juan Pérez"
+    - **Para historial**: "¿Qué trabajo le hicimos a María?"
+    - **Para márgenes**: "Analiza el precio para pintar una fachada de 300m²"
+    - **Para aceptar un presupuesto**: "Acepta el presupuesto de Juan Pérez"
+    - **Para marcar una factura como pagada**: "La factura de María López ya está pagada"
+    """)
+    
     if os.getenv("OPENROUTER_API_KEY"):
         st.success("✅ API Key configurada")
     else:
         st.error("❌ Falta API Key")
+    
+    if st.button("🔄 Nueva Conversación"):
+        st.session_state.clear()
+        st.rerun()
 
-st.markdown("---")
+# Inicialización del estado de la sesión
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# ========================================================================
-# MODO: AGENTE AUTÓNOMO CONVERSACIONAL
-# ========================================================================
-if mode == "🤖 Agente Autónomo (TODO Automático)":
-    st.header("🤖 Agente Autónomo - Conversación Natural")
-    st.markdown("""
-    💬 **Habla con el agente de forma natural.** Te preguntará lo que necesite.
-    
-    ✨ Cuando tenga toda la información, **automáticamente**:
-    - Generará el presupuesto completo
-    - Creará PDFs profesionales con estilos CSS
-    - Generará la factura
-    - Guardará en el historial
-    """)
-    
-    # Inicializar estados
-    if "auto_messages" not in st.session_state:
-        st.session_state.auto_messages = []
-    if "auto_completed" not in st.session_state:
-        st.session_state.auto_completed = False
-    if "auto_pdf_bytes" not in st.session_state:
-        st.session_state.auto_pdf_bytes = None
-    if "auto_invoice_pdf_bytes" not in st.session_state:
-        st.session_state.auto_invoice_pdf_bytes = None
-    if "auto_presupuesto_texto" not in st.session_state:
-        st.session_state.auto_presupuesto_texto = None
-    
-    # Botón para reiniciar
-    col1, col2 = st.columns([5, 1])
-    with col2:
-        if st.button("🔄 Nueva conversación", type="secondary"):
-            st.session_state.auto_messages = []
-            st.session_state.auto_completed = False
-            st.session_state.auto_pdf_bytes = None
-            st.session_state.auto_invoice_pdf_bytes = None
-            st.session_state.auto_presupuesto_texto = None
-            st.rerun()
-    
-    # Mostrar historial de mensajes
-    for message in st.session_state.auto_messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-    
-    # Input del usuario
-    if prompt := st.chat_input("💬 Escribe tu mensaje (ej: Necesito presupuesto para 100m²)..."):
-        st.session_state.auto_messages.append({"role": "user", "content": prompt})
-        
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        # Generar respuesta del agente
-        with st.chat_message("assistant"):
-            with st.spinner("🤖 Analizando y procesando..."):
-                try:
-                    agent = initialize_agent()
-                    
-                    # Convertir historial
-                    lc_history = []
-                    for msg in st.session_state.auto_messages[:-1]:
-                        if msg["role"] == "user":
-                            lc_history.append(HumanMessage(content=msg["content"]))
-                        else:
-                            lc_history.append(AIMessage(content=msg["content"]))
-                    
-                    # Generar respuesta
-                    response = agent.generate_budget(prompt, chat_history=lc_history)
-                    
-                    # Detectar si el agente tiene toda la información
-                # Detectar si el agente tiene toda la información
-                    palabras_completado = [
-                        "presupuesto total",
-                        "total con iva",
-                        "total presupuesto",  # ← AÑADIR ESTA
-                        "coste total",
-                        "precio final",
-                        "resumen económico",  # ← AÑADIR ESTA
-                        "€",
-                        "euros"
-                    ]
+if "current_task" not in st.session_state:
+    st.session_state.current_task = None
 
-                    tiene_info_completa = any(palabra in response.lower() for palabra in palabras_completado)
+if "task_completed" not in st.session_state:
+    st.session_state.task_completed = False
 
-                    
-                    tiene_info_completa = any(palabra in response.lower() for palabra in palabras_completado)
-                    
-                    # Mostrar respuesta
-                    st.markdown(response)
-                    st.session_state.auto_messages.append({"role": "assistant", "content": response})
-                    
-                    # Si tiene info completa, EJECUTAR TODO AUTOMÁTICAMENTE
-                    if tiene_info_completa and not st.session_state.auto_completed:
-                        st.markdown("---")
-                        st.info("🤖 **Detecté que tengo toda la información. Ejecutando acciones automáticas...**")
-                        
-                        # Obtener presupuesto limpio
-                        with st.spinner("⚙️ Generando presupuesto limpio..."):
-                            try:
-                                from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
-                                presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.auto_messages)
-                                st.session_state.auto_presupuesto_texto = presupuesto_limpio
-                                st.success("✅ Presupuesto procesado")
-                            except Exception as e:
-                                st.error(f"Error en presupuesto: {e}")
-                        
-                        # Generar PDF del presupuesto CON ESTILOS
-                        with st.spinner("📄 Generando PDF profesional del presupuesto..."):
-                            try:
-                                pdf_bytes = generar_pdf_presupuesto_con_estilos(presupuesto_limpio)
-                                st.session_state.auto_pdf_bytes = pdf_bytes
-                                st.success("✅ PDF profesional del presupuesto creado")
-                            except Exception as e:
-                                st.error(f"Error generando PDF: {e}")
-                        
-                        # Generar PDF de factura CON ESTILOS
-                        with st.spinner("🧾 Generando factura profesional..."):
-                            try:
-                                invoice_pdf_bytes = generar_pdf_factura_con_estilos(presupuesto_limpio)
-                                st.session_state.auto_invoice_pdf_bytes = invoice_pdf_bytes
-                                st.success("✅ Factura profesional creada")
-                            except Exception as e:
-                                st.error(f"Error generando factura: {e}")
-                        
-                        # Guardar en historial
-                        with st.spinner("💾 Guardando en historial de clientes..."):
-                            try:
-                                from src.utils.history_manager import guardar_presupuesto_en_historial
-                                from src.rag.vector_store import rebuild_customer_history_vectorstore
-                                
-                                resultado = guardar_presupuesto_en_historial(presupuesto_limpio)
-                                if resultado:
-                                    rebuild_customer_history_vectorstore()
-                                    st.cache_resource.clear()
-                                    st.success("✅ Guardado en historial y RAG actualizado")
-                                else:
-                                    st.warning("⚠️ No se pudo guardar en historial")
-                            except Exception as e:
-                                st.error(f"Error guardando: {e}")
-                        
-                        st.session_state.auto_completed = True
-                        
-                        st.markdown("---")
-                        st.success("""
-                        🎉 **¡Todas las acciones completadas automáticamente!**
-                        
-                        ✓ Presupuesto calculado
-                        ✓ PDF profesional generado
-                        ✓ Factura profesional creada
-                        ✓ Guardado en historial
-                        
-                        **Descarga tus archivos abajo** ⬇️
-                        """)
-                        
-                        st.rerun()
-                    
-                except Exception as e:
-                    error_msg = f"❌ Error: {str(e)}"
-                    st.error(error_msg)
-                    st.session_state.auto_messages.append({"role": "assistant", "content": error_msg})
-    
-    # Mostrar botones de descarga si todo está completado
-    if st.session_state.auto_completed:
-        st.markdown("---")
-        st.markdown("### 📥 Descargas Disponibles")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.session_state.auto_pdf_bytes:
-                st.download_button(
-                    label="📄 Descargar Presupuesto PDF",
-                    data=st.session_state.auto_pdf_bytes,
-                    file_name=f"presupuesto_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf",
-                    type="primary"
-                )
-        
-        with col2:
-            if st.session_state.auto_invoice_pdf_bytes:
-                st.download_button(
-                    label="🧾 Descargar Factura PDF",
-                    data=st.session_state.auto_invoice_pdf_bytes,
-                    file_name=f"factura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf",
-                    type="primary"
-                )
-        
-        with col3:
-            if st.session_state.auto_presupuesto_texto:
-                st.download_button(
-                    label="📝 Descargar Presupuesto TXT",
-                    data=st.session_state.auto_presupuesto_texto,
-                    file_name=f"presupuesto_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain",
-                    type="secondary"
-                )
+if "pdf_bytes" not in st.session_state:
+    st.session_state.pdf_bytes = None
 
-# ========================================================================
-# Modo: Consulta de Historial (RAG)
-# ========================================================================
-elif mode == "🔍 Consulta de Historial (RAG)":
-    st.header("🔍 Consulta de Historial de Clientes")
-    st.markdown("Pregunta sobre trabajos anteriores, clientes, pinturas utilizadas, costes, etc.")
+if "invoice_pdf_bytes" not in st.session_state:
+    st.session_state.invoice_pdf_bytes = None
+
+if "final_budget_dict" not in st.session_state:
+    st.session_state.final_budget_dict = None
+
+if "budget_json_path" not in st.session_state:
+    st.session_state.budget_json_path = None
+
+if "last_rag_response_content" not in st.session_state:
+    st.session_state.last_rag_response_content = None
+
+if "rag_refresh" not in st.session_state:
+    st.session_state.rag_refresh = False
+
+# Mostrar historial del chat
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Input del usuario
+if prompt := st.chat_input("¿Cómo puedo ayudarte?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").markdown(prompt)
     
-    if "last_rag_answer" not in st.session_state:
-        st.session_state.last_rag_answer = None
-    if "last_invoice_pdf" not in st.session_state:
-        st.session_state.last_invoice_pdf = None
-    
-    with st.expander("💡 Ejemplos de consultas"):
-        st.markdown("""
-        - ¿Qué trabajo se le hizo a María González?
-        - ¿Qué clientes han usado pintura Jotun?
-        - ¿Cuánto costó el trabajo de Carlos Ruiz?
-        """)
-    
-    query = st.text_input(
-        "Tu consulta:",
-        placeholder="Ejemplo: ¿Qué trabajo se le hizo a Ana Martínez?",
-        key="rag_query"
-    )
-    
-    if st.button("🔎 Consultar", type="primary", key="rag_button"):
-        if query:
-            with st.spinner("🔄 Buscando en el historial..."):
-                try:
-                    rag = initialize_rag()
-                    result = rag.query(query)
-                    
-                    st.success("✅ Información encontrada")
-                    st.markdown("### 📝 Respuesta:")
-                    st.markdown(result["answer"])
-                    
-                    st.session_state.last_rag_answer = result["answer"]
-                    st.session_state.last_invoice_pdf = None
-                    
-                    with st.expander("📚 Ver documentos fuente"):
-                        for i, doc in enumerate(result["source_documents"], 1):
-                            st.markdown(f"**Documento {i}:**")
-                            st.text(doc.page_content)
-                            st.markdown("---")
-                            
-                except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
+    with st.chat_message("assistant"):
+        # Lógica principal de enrutamiento
+        if st.session_state.current_task is None:
+            router = initialize_router_agent()
+            route = router.route(prompt)
+            st.session_state.current_task = route
         else:
-            st.warning("⚠️ Por favor, escribe una consulta")
-    
-    if st.session_state.last_rag_answer:
-        st.markdown("---")
-        if st.button("🧾 Generar factura profesional", type="primary", key="invoice_from_rag"):
-            with st.spinner("🧾 Generando factura con estilos..."):
-                try:
-                    pdf_bytes = generar_pdf_factura_con_estilos(st.session_state.last_rag_answer)
-                    st.session_state.last_invoice_pdf = pdf_bytes
-                    st.success("✅ Factura profesional creada")
-                except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
+            route = st.session_state.current_task
         
-        if st.session_state.last_invoice_pdf:
-            st.download_button(
-                label="📥 Descargar Factura PDF",
-                data=st.session_state.last_invoice_pdf,
-                file_name=f"factura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                mime="application/pdf",
-                type="primary",
-                key="download_invoice_pdf_rag_btn"
-            )
-
-# ========================================================================
-# Modo: Asistente de Precios y Márgenes
-# ========================================================================
-elif mode == "📈 Asistente de Precios y Márgenes":
-    st.header("📈 Asistente de Precios y Márgenes")
-    st.markdown("Analiza tu histórico de presupuestos y te sugiere precios mínimos según el margen que marques.")
-    
-    target_margin = st.slider(
-        "Margen mínimo de beneficio (%)",
-        min_value=10,
-        max_value=60,
-        value=25,
-        step=5,
-    )
-    
-    job_description = st.text_area(
-        "Describe el trabajo que quieres analizar",
-        placeholder="Ejemplo: Pintar 120 m² interior, pintura plástica blanca, cliente nuevo..."
-    )
-    
-    if st.button("🔍 Analizar precios y márgenes", type="primary", key="analyze_margins"):
-        if not job_description.strip():
-            st.warning("⚠️ Por favor, describe el trabajo a analizar.")
-        else:
-            with st.spinner("📊 Analizando histórico..."):
-                try:
-                    history_path = "data/customer_history.md"
-                    if not os.path.exists(history_path):
-                        st.error("❌ No se encuentra data/customer_history.md.")
+        # Ejecutar la tarea correspondiente
+        if route == "presupuesto":
+            lc_history = [HumanMessage(content=msg["content"]) if msg["role"] == "user" else AIMessage(content=msg["content"]) 
+                         for msg in st.session_state.messages[:-1]]
+            handle_budget_conversation(prompt, lc_history)
+        
+        elif route == "historial":
+            handle_history_query(prompt)
+        
+        elif route == "margenes":
+            history_path = "data/customer_history.md"
+            history_text = ""
+            if os.path.exists(history_path):
+                with open(history_path, 'r', encoding='utf-8') as f:
+                    history_text = f.read()
+            handle_margins_query(prompt, history_text)
+        
+        elif route == "aceptar_presupuesto":
+            # Usar RAG para buscar el presupuesto
+            if st.session_state.final_budget_dict and st.session_state.budget_json_path:
+                # Si existe en sesión, usar ese
+                handle_accept_budget(st.session_state.final_budget_dict, st.session_state.budget_json_path, st.session_state.messages[:-1])
+            else:
+                # Buscar usando RAG
+                st.session_state.messages.append({"role": "assistant", "content": "🔍 Buscando el presupuesto mediante RAG..."})
+                
+                resultado = buscar_presupuesto_por_rag(prompt)
+                
+                if resultado:
+                    st.session_state.messages.append({"role": "assistant", "content": f"✅ Presupuesto {resultado['numero']} encontrado para {resultado['data']['cliente']['nombre']}. Procediendo a generar la factura..."})
+                    handle_accept_budget(resultado['data'], resultado['path'], st.session_state.messages[:-1])
+                else:
+                    st.session_state.messages.append({"role": "assistant", "content": "❌ No encontré ningún presupuesto pendiente. ¿Puedes verificar el nombre del cliente o generar un nuevo presupuesto?"})
+                    st.session_state.current_task = None
+        
+        elif route == "marcar_pagada":
+            # Intentar extraer el número exacto primero
+            match_presupuesto = re.search(r'PRES-\d{14}', prompt)
+            
+            if match_presupuesto:
+                # Si hay número exacto, usarlo directamente
+                presupuesto_numero_a_pagar = match_presupuesto.group(0)
+                budget_json_path_to_pay = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero_a_pagar}.json")
+                
+                if os.path.exists(budget_json_path_to_pay):
+                    with open(budget_json_path_to_pay, 'r', encoding='utf-8') as f:
+                        budget_data_to_pay = json.load(f)
+                    
+                    if budget_data_to_pay.get("estadoPago") == "Pendiente":
+                        handle_mark_as_paid(budget_data_to_pay, budget_json_path_to_pay, st.session_state.messages[:-1])
                     else:
-                        with open(history_path, "r", encoding="utf-8") as f:
-                            history_text = f.read()
-                        
-                        price_agent = initialize_price_agent()
-                        analysis = price_agent.analyze_margins(
-                            history_text=history_text,
-                            job_description=job_description,
-                            target_margin_percent=float(target_margin),
-                        )
-                        
-                        st.markdown("### 📊 Análisis de precios y márgenes")
-                        st.markdown(analysis)
-                except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
+                        st.session_state.messages.append({"role": "assistant", "content": f"La factura {presupuesto_numero_a_pagar} no está pendiente de pago."})
+                else:
+                    st.session_state.messages.append({"role": "assistant", "content": f"No encontré la factura {presupuesto_numero_a_pagar}."})
+            else:
+                # Buscar usando RAG
+                st.session_state.messages.append({"role": "assistant", "content": "🔍 Buscando la factura mediante RAG..."})
+                
+                resultado = buscar_factura_por_rag(prompt)
+                
+                if resultado:
+                    st.session_state.messages.append({"role": "assistant", "content": f"✅ Factura {resultado['numero']} encontrada para {resultado['data']['cliente']['nombre']}. Marcando como pagada..."})
+                    handle_mark_as_paid(resultado['data'], resultado['path'], st.session_state.messages[:-1])
+                else:
+                    st.session_state.messages.append({"role": "assistant", "content": "❌ No encontré ninguna factura pendiente. ¿Puedes verificar el nombre del cliente o proporcionar el número de factura?"})
+            
+            st.session_state.current_task = None
+        
+        else:  # Ruta general
+            st.session_state.messages.append({"role": "assistant", "content": "Hola, ¿en qué puedo ayudarte? Si necesitas un presupuesto, consultar un historial o analizar precios, solo tienes que pedírmelo."})
+            st.session_state.current_task = None
+    
+    st.rerun()
 
-# ========================================================================
-# Modo: Generador Manual
-# ========================================================================
-else:
-    st.header("💰 Generador de Presupuestos (Modo Manual)")
-    st.markdown("Conversación natural + botones manuales para generar archivos profesionales.")
+# Lógica para mostrar descargas
+if st.session_state.task_completed and (st.session_state.pdf_bytes or st.session_state.invoice_pdf_bytes):
+    st.markdown("---")
+    st.markdown("### 📥 Descargas Disponibles")
+    col1, col2 = st.columns(2)
     
-    with st.expander("💡 Ejemplos de solicitudes"):
-        st.markdown("""
-        - Necesito presupuesto para pintar 150 m² de interior
-        - Quiero presupuesto para 439 metros para mi cliente Ronaldo
-        - ¿Cuánto costaría pintar una habitación de 45 metros cuadrados?
-        """)
-    
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    if "pdf_ready" not in st.session_state:
-        st.session_state.pdf_ready = False
-    if "pdf_bytes" not in st.session_state:
-        st.session_state.pdf_bytes = None
-    if "invoice_pdf_bytes" not in st.session_state:
-        st.session_state.invoice_pdf_bytes = None
-    
-    col1, col2 = st.columns([5, 1])
-    with col2:
-        if st.button("🔄 Reiniciar", type="secondary"):
-            st.session_state.messages = []
-            st.session_state.pdf_ready = False
-            st.session_state.pdf_bytes = None
-            st.session_state.invoice_pdf_bytes = None
-            st.rerun()
-    
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-    
-    if prompt := st.chat_input("Escribe aquí tu mensaje..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        with st.chat_message("assistant"):
-            with st.spinner("🤖 Pensando..."):
-                try:
-                    agent = initialize_agent()
-                    
-                    lc_history = []
-                    for msg in st.session_state.messages[:-1]:
-                        if msg["role"] == "user":
-                            lc_history.append(HumanMessage(content=msg["content"]))
-                        else:
-                            lc_history.append(AIMessage(content=msg["content"]))
-                    
-                    response = agent.generate_budget(prompt, chat_history=lc_history)
-                    st.markdown(response)
-                    st.session_state.messages.append({"role": "assistant", "content": response})
-                    st.session_state.pdf_ready = False
-                    st.session_state.pdf_bytes = None
-                    st.session_state.invoice_pdf_bytes = None
-                    
-                except Exception as e:
-                    error_msg = f"❌ Error: {str(e)}"
-                    st.error(error_msg)
-                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
-    
-    if st.session_state.messages:
-        st.markdown("---")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            download_content = "# Conversación Completa\n\n"
-            for msg in st.session_state.messages:
-                role = "👤 USUARIO" if msg["role"] == "user" else "🤖 ASISTENTE"
-                download_content += f"**{role}:**\n{msg['content']}\n\n"
-            
+    with col1:
+        if st.session_state.pdf_bytes and st.session_state.final_budget_dict:
             st.download_button(
-                label="📄 Markdown",
-                data=download_content,
-                file_name=f"conversacion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
-                mime="text/markdown",
-                type="secondary"
+                label="📄 Descargar Presupuesto PDF",
+                data=st.session_state.pdf_bytes,
+                file_name=f"presupuesto_{st.session_state.final_budget_dict['presupuesto_numero']}.pdf",
+                mime="application/pdf",
+                type="primary"
             )
-        
-        with col2:
-            if not st.session_state.pdf_ready:
-                if st.button("🔄 Generar PDF Profesional", type="primary", key="generate_pdf"):
-                    with st.spinner("🤖 Generando PDF con estilos..."):
-                        try:
-                            from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
-                            
-                            presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.messages)
-                            pdf_bytes = generar_pdf_presupuesto_con_estilos(presupuesto_limpio)
-                            st.session_state.pdf_bytes = pdf_bytes
-                            st.session_state.pdf_ready = True
-                            st.success("✅ PDF profesional generado")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"❌ Error: {str(e)}")
-            
-            if st.session_state.pdf_ready and st.session_state.pdf_bytes:
-                st.download_button(
-                    label="📥 Descargar PDF",
-                    data=st.session_state.pdf_bytes,
-                    file_name=f"presupuesto_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf",
-                    type="primary"
-                )
-        
-        with col3:
-            if st.button("💾 Guardar en Historial", type="primary", key="save_history"):
-                with st.spinner("💾 Guardando..."):
-                    try:
-                        from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
-                        from src.utils.history_manager import guardar_presupuesto_en_historial
-                        from src.rag.vector_store import rebuild_customer_history_vectorstore
-                        
-                        presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.messages)
-                        resultado = guardar_presupuesto_en_historial(presupuesto_limpio)
-                        
-                        if resultado:
-                            st.success("✅ Guardado")
-                            with st.spinner("🔄 Actualizando RAG..."):
-                                rebuild_customer_history_vectorstore()
-                            st.success("✅ RAG actualizado")
-                            st.cache_resource.clear()
-                        else:
-                            st.error("❌ No se pudo guardar")
-                    except Exception as e:
-                        st.error(f"❌ Error: {str(e)}")
-        
-        with col4:
-            if st.button("🧾 Generar Factura Profesional", type="primary", key="generate_invoice"):
-                with st.spinner("🧾 Generando factura con estilos..."):
-                    try:
-                        from src.utils.presupuesto_cleaner import get_presupuesto_final_limpio
-                        
-                        presupuesto_limpio = get_presupuesto_final_limpio(st.session_state.messages)
-                        invoice_pdf_bytes = generar_pdf_factura_con_estilos(presupuesto_limpio)
-                        st.session_state.invoice_pdf_bytes = invoice_pdf_bytes
-                        st.success("✅ Factura profesional creada")
-                    except Exception as e:
-                        st.error(f"❌ Error: {str(e)}")
-            
-            if st.session_state.invoice_pdf_bytes:
-                st.download_button(
-                    label="📥 Descargar Factura PDF",
-                    data=st.session_state.invoice_pdf_bytes,
-                    file_name=f"factura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf",
-                    type="primary",
-                    key="download_invoice_pdf_btn"
-                )
+    
+    with col2:
+        if st.session_state.invoice_pdf_bytes and st.session_state.final_budget_dict:
+            st.download_button(
+                label="🧾 Descargar Factura PDF",
+                data=st.session_state.invoice_pdf_bytes,
+                file_name=f"factura_{st.session_state.final_budget_dict['presupuesto_numero']}.pdf",
+                mime="application/pdf",
+                type="primary"
+            )
 
 # Footer
 st.markdown("---")
-st.markdown("""
-<div style='text-align: center; color: gray;'>
-    <small>Asistente Empresarial v3.0 | PDFs Profesionales con Estilos CSS 🎨</small>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    '<div style="text-align: center; color: gray;"><small>Asistente Empresarial v6.0 | RAG-Powered Search</small></div>',
+    unsafe_allow_html=True
+)
