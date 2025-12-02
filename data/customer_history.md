@@ -168,3 +168,17 @@
 - **Cantidad**: [Estimado según presupuesto]
 - **Coste total**: No especificado€
 - **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media
+
+
+## Cliente: Periquito de los Palotes
+- **NIF/CIF**: 76598762B
+- **Teléfono**: +34 910 123 456
+- **Dirección**: Calle Camino sin número, 41740 Jerez
+- **Email**: presupuestos@pinturaspro.es
+- **Fecha**: 2025-12-01
+- **Trabajo**: Pintura interior
+- **Superficie**: 110 m²
+- **Pintura utilizada**: Interior
+- **Cantidad**: [Estimado según presupuesto]
+- **Coste total**: No especificado€
+- **Observaciones**: Presupuesto generado automáticamente. Complejidad: Media

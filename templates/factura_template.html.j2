@@ -3,90 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 40px;
-            color: #333;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            background: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: white;
+        }
+        
+        /* HEADER */
         .header {
-            background: #1a1a2e;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
-            padding: 25px;
+            padding: 30px;
+            margin: -40px -40px 40px -40px;
             text-align: center;
-            margin-bottom: 30px;
         }
         
         .header h1 {
-            margin: 0;
             font-size: 36px;
+            margin-bottom: 5px;
             color: #ff6b6b;
         }
         
-        .header .doc-number {
+        .header .number {
             font-size: 14px;
-            margin-top: 5px;
+            opacity: 0.9;
         }
         
-        .legal-badge {
+        /* BADGE */
+        .badge {
+            display: inline-block;
             background: #ff6b6b;
             color: white;
-            padding: 8px 20px;
-            display: inline-block;
-            margin-bottom: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: bold;
+            margin-bottom: 20px;
         }
         
-        /* Info boxes */
-        .info-section {
-            width: 100%;
+        /* SECTIONS */
+        .section {
             margin-bottom: 30px;
         }
         
-        .info-box {
-            width: 48%;
-            float: left;
-            background: #f8f9fa;
-            padding: 15px;
-            margin-right: 2%;
-            border-left: 4px solid #ff6b6b;
-            min-height: 150px;
-        }
-        
-        .info-box:last-child {
-            margin-right: 0;
-        }
-        
-        .info-box h3 {
-            font-size: 11px;
+        .section-title {
+            font-size: 13px;
             color: #ff6b6b;
             text-transform: uppercase;
-            margin-bottom: 10px;
             font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6b6b;
+        }
+        
+        /* INFO BOXES */
+        .info-box {
+            background: #fff5f5;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b6b;
+            border-radius: 4px;
         }
         
         .info-box p {
-            font-size: 12px;
-            color: #555;
             margin: 5px 0;
-            line-height: 1.5;
+            font-size: 13px;
         }
         
-        .clear {
-            clear: both;
-        }
-        
-        /* Tabla */
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
+        .info-box strong {
             color: #1a1a2e;
-            margin: 30px 0 15px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #1a1a2e;
+            display: inline-block;
+            width: 120px;
         }
         
+        /* TABLE */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -102,66 +106,42 @@
             padding: 12px;
             text-align: left;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 12px;
             text-transform: uppercase;
-        }
-        
-        th.align-center {
-            text-align: center;
-        }
-        
-        th.align-right {
-            text-align: right;
         }
         
         td {
             padding: 12px;
-            border-bottom: 1px solid #e9ecef;
-            font-size: 12px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 13px;
         }
         
-        td.align-center {
-            text-align: center;
-        }
-        
+        th.align-right,
         td.align-right {
             text-align: right;
         }
         
-        tbody tr:last-child td {
-            border-bottom: none;
+        tbody tr:hover {
+            background: #fff5f5;
         }
         
-        /* Totales */
-        .totals-box {
-            width: 350px;
+        /* TOTALS BOX */
+        .totals {
             float: right;
-            background: #f8f9fa;
+            width: 350px;
+            background: #fff5f5;
+            border: 2px solid #ff6b6b;
+            border-radius: 4px;
             padding: 20px;
             margin-top: 20px;
-            border: 2px solid #1a1a2e;
         }
         
         .total-row {
-            padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
             border-bottom: 1px solid #ddd;
             font-size: 13px;
-        }
-        
-        .total-row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-        
-        .total-row .label {
-            float: left;
-            color: #555;
-        }
-        
-        .total-row .amount {
-            float: right;
-            font-weight: bold;
         }
         
         .total-row.final {
@@ -170,135 +150,142 @@
             padding: 15px;
             margin: 15px -20px -20px -20px;
             border: none;
+            border-radius: 0 0 2px 2px;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .total-row.final .label,
-        .total-row.final .amount {
-            color: white;
+        .total-row strong {
+            font-weight: bold;
         }
         
-        /* Términos de pago */
+        .total-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* PAYMENT TERMS */
         .payment-terms {
             clear: both;
             background: #fff3cd;
             border-left: 4px solid #ffc107;
             padding: 15px;
             margin: 30px 0;
+            border-radius: 4px;
         }
         
         .payment-terms h3 {
-            font-size: 14px;
+            font-size: 13px;
             color: #856404;
-            margin: 0 0 10px 0;
+            margin-bottom: 10px;
         }
         
         .payment-terms p {
-            font-size: 11px;
+            font-size: 12px;
             color: #856404;
             margin: 5px 0;
         }
         
-        /* Footer */
+        /* FOOTER */
         .footer {
             margin-top: 40px;
-            padding-top: 15px;
-            border-top: 2px solid #e9ecef;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
             text-align: center;
-        }
-        
-        .footer p {
-            font-size: 9px;
-            color: #999;
-            margin: 5px 0;
+            font-size: 10px;
+            color: #7f8c8d;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <h1>FACTURA</h1>
-        <div class="doc-number">#{{ factura_numero }} | {{ fecha }}</div>
-    </div>
-    
-    <div class="legal-badge">⚖️ DOCUMENTO LEGAL - ORIGINAL</div>
-    
-    <!-- Info empresa y cliente -->
-    <div class="info-section">
-        <div class="info-box">
-            <h3>Datos Fiscales de la Empresa</h3>
-            <p><strong>Pintura Express S.L.</strong></p>
-            <p>CIF: A12345678</p>
-            <p>Calle Principal, 123</p>
-            <p>28001 Madrid, España</p>
-            <p>Tel: +34 912 345 678</p>
-            <p>Email: facturacion@pinturaexpress.com</p>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>FACTURA</h1>
+            <div class="number">#{{ factura_numero }} | {{ fecha }}</div>
         </div>
         
-        <div class="info-box">
-            <h3>Datos del Cliente</h3>
-            <p><strong>{{ cliente_nombre }}</strong></p>
-            <p>{{ cliente_nif }}</p>
-            <p>{{ cliente_direccion }}</p>
-            <p>{{ cliente_email }}</p>
+        <div class="badge">⚖️ DOCUMENTO LEGAL - ORIGINAL</div>
+        
+        <!-- DATOS EMPRESA Y CLIENTE -->
+        <div class="section">
+            <div class="section-title">Datos Fiscales de la Empresa</div>
+            <div class="info-box">
+                <p><strong>Empresa:</strong> Pintura Express S.L.</p>
+                <p><strong>CIF:</strong> A12345678</p>
+                <p><strong>Dirección:</strong> Calle Principal, 123 | 28001 Madrid</p>
+                <p><strong>Teléfono:</strong> +34 912 345 678</p>
+                <p><strong>Email:</strong> facturacion@pinturaexpress.com</p>
+            </div>
         </div>
-    </div>
-    
-    <div class="clear"></div>
-    
-    <!-- Tabla de conceptos -->
-    <h2 class="section-title">Servicios Prestados</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Concepto</th>
-                <th class="align-center">Cantidad</th>
-                <th class="align-right">Precio Unit.</th>
-                <th class="align-right">Importe</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td><strong>{{ item.concepto }}</strong></td>
-                <td class="align-center">{{ item.cantidad }}</td>
-                <td class="align-right">{{ item.precio_unitario }}</td>
-                <td class="align-right"><strong>{{ item.importe }}</strong></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    <!-- Totales -->
-    <div class="totals-box">
-        <div class="total-row">
-            <span class="label">Subtotal:</span>
-            <span class="amount">{{ subtotal }} €</span>
+        
+        <div class="section">
+            <div class="section-title">Datos del Cliente</div>
+            <div class="info-box">
+                <p><strong>Nombre:</strong> {{ cliente_nombre }}</p>
+                <p><strong>NIF/CIF:</strong> {{ cliente_nif }}</p>
+                <p><strong>Dirección:</strong> {{ cliente_direccion }}</p>
+                <p><strong>Email:</strong> {{ cliente_email }}</p>
+            </div>
         </div>
-        <div class="total-row">
-            <span class="label">IVA (21%):</span>
-            <span class="amount">{{ iva }} €</span>
+        
+        <!-- TABLA DE SERVICIOS -->
+        <div class="section">
+            <div class="section-title">Servicios Prestados</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th class="align-right">Cantidad</th>
+                        <th class="align-right">Precio Unitario</th>
+                        <th class="align-right">Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><strong>{{ item.concepto }}</strong></td>
+                        <td class="align-right">{{ item.cantidad }}</td>
+                        <td class="align-right">{{ item.precio_unitario }}</td>
+                        <td class="align-right"><strong>{{ item.importe }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <div class="total-row final">
-            <span class="label">TOTAL FACTURA:</span>
-            <span class="amount">{{ total }} €</span>
+        
+        <!-- TOTALES -->
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>{{ subtotal }} €</span>
+            </div>
+            <div class="total-row">
+                <span>IVA (21%):</span>
+                <span>{{ iva }} €</span>
+            </div>
+            <div class="total-row final">
+                <span>TOTAL FACTURA:</span>
+                <span>{{ total }} €</span>
+            </div>
         </div>
-    </div>
-    
-    <!-- Términos de pago -->
-    <div class="payment-terms">
-        <h3>Condiciones de Pago</h3>
-        <p><strong>Plazo:</strong> 30 días desde la fecha de emisión</p>
-        <p><strong>Forma de pago:</strong> Transferencia bancaria</p>
-        <p><strong>Cuenta bancaria:</strong> ES12 1234 5678 90 1234567890</p>
-        <p><strong>Concepto:</strong> Factura {{ factura_numero }}</p>
-    </div>
-    
-    <!-- Footer -->
-    <div class="footer">
-        <p>Factura generada automáticamente. Documento válido sin firma según normativa vigente.</p>
-        <p>Pintura Express S.L. - CIF: A12345678 - Registro Mercantil de Madrid</p>
+        
+        <!-- CONDICIONES DE PAGO -->
+        <div class="payment-terms">
+            <h3>💳 Condiciones de Pago</h3>
+            <p><strong>Plazo:</strong> 30 días desde la fecha de emisión</p>
+            <p><strong>Forma de pago:</strong> Transferencia bancaria</p>
+            <p><strong>Banco:</strong> ES12 1234 5678 90 1234567890</p>
+            <p><strong>Concepto:</strong> Factura {{ factura_numero }}</p>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Factura generada automáticamente | Válida sin firma según normativa vigente</p>
+            <p>Pintura Express S.L. | CIF: A12345678 | Registro Mercantil de Madrid</p>
+        </div>
     </div>
 </body>
 </html>

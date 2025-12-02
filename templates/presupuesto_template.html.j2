@@ -1,86 +1,298 @@
+## 1️⃣ `templates/presupuesto_template.html.j2` (Presupuesto)
+
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            background: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: white;
+        }
+        
+        /* HEADER */
         .header {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 30px;
+            margin: -40px -40px 40px -40px;
             text-align: center;
         }
+        
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+        
+        .header .number {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* BADGE */
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        /* SECTIONS */
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            color: #667eea;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        /* INFO BOXES */
+        .info-box {
+            background: #f7f9fc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        
+        .info-box strong {
+            color: #2c3e50;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        /* TABLE */
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
         }
-        th {
+        
+        thead {
             background: #667eea;
             color: white;
-            padding: 10px;
+        }
+        
+        th {
+            padding: 12px;
             text-align: left;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
         }
+        
         td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 13px;
         }
+        
+        th.align-right,
+        td.align-right {
+            text-align: right;
+        }
+        
+        tbody tr:hover {
+            background: #f7f9fc;
+        }
+        
+        /* TOTALS BOX */
         .totals {
             float: right;
-            width: 300px;
+            width: 350px;
+            background: #f7f9fc;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            padding: 20px;
             margin-top: 20px;
         }
+        
         .total-row {
-            padding: 5px;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
             border-bottom: 1px solid #ddd;
+            font-size: 13px;
         }
-        .final-total {
+        
+        .total-row.final {
             background: #667eea;
             color: white;
-            padding: 10px;
+            padding: 15px;
+            margin: 15px -20px -20px -20px;
+            border: none;
+            border-radius: 0 0 2px 2px;
             font-weight: bold;
             font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .total-row strong {
+            font-weight: bold;
+        }
+        
+        .total-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* CONDITIONS */
+        .conditions {
+            clear: both;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+        
+        .conditions h3 {
+            font-size: 13px;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .conditions p {
+            font-size: 12px;
+            color: #856404;
+            margin: 5px 0;
+        }
+        
+        /* FOOTER */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            text-align: center;
+            font-size: 10px;
+            color: #7f8c8d;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>PRESUPUESTO #{{ presupuesto_numero }}</h1>
-        <p>{{ fecha }}</p>
-    </div>
-    
-    <h3>Cliente: {{ cliente_nombre }}</h3>
-    <p>NIF: {{ cliente_nif }}</p>
-    <p>Dirección: {{ cliente_direccion }}</p>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Concepto</th>
-                <th>Cantidad</th>
-                <th>Precio Unit.</th>
-                <th>Importe</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item.concepto }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>{{ item.precio_unitario }}</td>
-                <td>{{ item.importe }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    <div class="totals">
-        <div class="total-row">Subtotal: {{ subtotal }} €</div>
-        <div class="total-row">IVA (21%): {{ iva }} €</div>
-        <div class="final-total">TOTAL: {{ total }} €</div>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>PRESUPUESTO</h1>
+            <div class="number">#{{ presupuesto_numero }} | {{ fecha }}</div>
+        </div>
+        
+        <div class="badge">📋 PRESUPUESTO PROFESIONAL</div>
+        
+        <!-- DATOS EMPRESA Y CLIENTE -->
+        <div class="section">
+            <div class="section-title">Datos de la Empresa</div>
+            <div class="info-box">
+                <p><strong>Empresa:</strong> Pintura Express S.L.</p>
+                <p><strong>CIF:</strong> A12345678</p>
+                <p><strong>Dirección:</strong> Calle Principal, 123 | 28001 Madrid</p>
+                <p><strong>Teléfono:</strong> +34 912 345 678</p>
+                <p><strong>Email:</strong> presupuestos@pinturaexpress.com</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Datos del Cliente</div>
+            <div class="info-box">
+                <p><strong>Nombre:</strong> {{ cliente_nombre }}</p>
+                <p><strong>NIF/CIF:</strong> {{ cliente_nif }}</p>
+                <p><strong>Dirección:</strong> {{ cliente_direccion }}</p>
+                <p><strong>Email:</strong> {{ cliente_email }}</p>
+            </div>
+        </div>
+        
+        <!-- TABLA DE SERVICIOS -->
+        <div class="section">
+            <div class="section-title">Servicios Detallados</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th class="align-right">Cantidad</th>
+                        <th class="align-right">Precio Unitario</th>
+                        <th class="align-right">Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><strong>{{ item.concepto }}</strong></td>
+                        <td class="align-right">{{ item.cantidad }}</td>
+                        <td class="align-right">{{ item.precio_unitario }}</td>
+                        <td class="align-right"><strong>{{ item.importe }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- TOTALES -->
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>{{ subtotal }} €</span>
+            </div>
+            <div class="total-row">
+                <span>Margen (30%):</span>
+                <span>{{ margen }} €</span>
+            </div>
+            <div class="total-row">
+                <span>Base Imponible:</span>
+                <span>{{ base_imponible }} €</span>
+            </div>
+            <div class="total-row">
+                <span>IVA (21%):</span>
+                <span>{{ iva }} €</span>
+            </div>
+            <div class="total-row final">
+                <span>TOTAL:</span>
+                <span>{{ total }} €</span>
+            </div>
+        </div>
+        
+        <!-- CONDICIONES -->
+        <div class="conditions">
+            <h3>📋 Condiciones Generales</h3>
+            <p><strong>Validez:</strong> 30 días desde la fecha de emisión</p>
+            <p><strong>Pago:</strong> 50% al inicio, 50% a la finalización</p>
+            <p><strong>Trabajos adicionales:</strong> Se presupuestarán aparte</p>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Pintura Express S.L. | CIF: A12345678 | Presupuesto generado automáticamente</p>
+        </div>
     </div>
 </body>
 </html>
