@@ -48,31 +48,62 @@ def buscar_presupuesto_por_rag(prompt: str):
         result = rag.query(query)
         respuesta_rag = result.get("answer", "")
         
-        if not respuesta_rag or "no" in respuesta_rag.lower():
-            return None
-        
-        # Extraer el número de presupuesto de la respuesta RAG usando regex
+        # Intentar extraer el número de presupuesto de la respuesta RAG
         match = re.search(r'PRES-\d{14}', respuesta_rag)
         
-        if not match:
-            return None
+        if match:
+            presupuesto_numero = match.group(0)
+            
+            # Localizar el archivo JSON correspondiente
+            json_path = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero}.json")
+            
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                    # Verificar que esté en estado "Presupuestado"
+                    if data.get("estado", "").lower() == "presupuestado":
+                        return {
+                            "path": json_path,
+                            "data": data,
+                            "numero": presupuesto_numero
+                        }
         
-        presupuesto_numero = match.group(0)
+        # Si no encontramos por número PRES, buscar por nombre de cliente en los JSONs
+        import unicodedata
+        json_files = glob.glob("data/presupuestos/presupuesto_*.json")
         
-        # Localizar el archivo JSON correspondiente
-        json_path = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero}.json")
-        
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                
-                # Verificar que esté en estado "Presupuestado"
-                if data.get("estado", "").lower() == "presupuestado":
-                    return {
-                        "path": json_path,
-                        "data": data,
-                        "numero": presupuesto_numero
-                    }
+        for json_file in json_files:
+            try:
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                    # Verificar que esté en estado "Presupuestado"
+                    if data.get("estado", "").lower() == "presupuestado":
+                        cliente_nombre = data.get("cliente", {}).get("nombre", "").lower()
+                        prompt_lower = prompt.lower()
+                        
+                        # Normalizar tildes para comparación
+                        cliente_normalized = ''.join(
+                            c for c in unicodedata.normalize('NFD', cliente_nombre)
+                            if unicodedata.category(c) != 'Mn'
+                        )
+                        prompt_normalized = ''.join(
+                            c for c in unicodedata.normalize('NFD', prompt_lower)
+                            if unicodedata.category(c) != 'Mn'
+                        )
+                        
+                        # Verificar si alguna palabra del nombre aparece en el prompt
+                        palabras_nombre = cliente_normalized.split()
+                        if any(palabra in prompt_normalized for palabra in palabras_nombre if len(palabra) > 3):
+                            presupuesto_numero = data.get("presupuesto_numero")
+                            return {
+                                "path": json_file,
+                                "data": data,
+                                "numero": presupuesto_numero
+                            }
+            except Exception as e:
+                continue
         
         return None
     
@@ -94,31 +125,67 @@ def buscar_factura_por_rag(prompt: str):
         result = rag.query(query)
         respuesta_rag = result.get("answer", "")
         
-        if not respuesta_rag or "no" in respuesta_rag.lower():
-            return None
-        
-        # Extraer el número de presupuesto/factura de la respuesta RAG
+        # Intentar extraer el número de presupuesto de la respuesta RAG
         match = re.search(r'PRES-\d{14}', respuesta_rag)
         
-        if not match:
-            return None
+        if match:
+            presupuesto_numero = match.group(0)
+            
+            # Localizar el archivo JSON correspondiente
+            json_path = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero}.json")
+            
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                    # Verificar que esté pendiente de pago
+                    if data.get("estadoPago", "").lower() == "pendiente":
+                        return {
+                            "path": json_path,
+                            "data": data,
+                            "numero": presupuesto_numero
+                        }
         
-        presupuesto_numero = match.group(0)
+        # Si no encontramos por número PRES, intentar buscar por nombre de cliente en los JSONs
+        # Extraer posible nombre del cliente del prompt
+        import os
+        import json
         
-        # Localizar el archivo JSON correspondiente
-        json_path = os.path.join("data/presupuestos", f"presupuesto_{presupuesto_numero}.json")
+        json_files = glob.glob("data/presupuestos/presupuesto_*.json")
         
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                
-                # Verificar que esté pendiente de pago
-                if data.get("estadoPago", "").lower() == "pendiente":
-                    return {
-                        "path": json_path,
-                        "data": data,
-                        "numero": presupuesto_numero
-                    }
+        for json_file in json_files:
+            try:
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                    # Verificar que esté pendiente de pago
+                    if data.get("estadoPago", "").lower() == "pendiente":
+                        # Buscar coincidencia de nombre (sin tildes, case-insensitive)
+                        cliente_nombre = data.get("cliente", {}).get("nombre", "").lower()
+                        prompt_lower = prompt.lower()
+                        
+                        # Normalizar tildes para comparación
+                        import unicodedata
+                        cliente_normalized = ''.join(
+                            c for c in unicodedata.normalize('NFD', cliente_nombre)
+                            if unicodedata.category(c) != 'Mn'
+                        )
+                        prompt_normalized = ''.join(
+                            c for c in unicodedata.normalize('NFD', prompt_lower)
+                            if unicodedata.category(c) != 'Mn'
+                        )
+                        
+                        # Verificar si alguna palabra del nombre aparece en el prompt
+                        palabras_nombre = cliente_normalized.split()
+                        if any(palabra in prompt_normalized for palabra in palabras_nombre if len(palabra) > 3):
+                            presupuesto_numero = data.get("presupuesto_numero")
+                            return {
+                                "path": json_file,
+                                "data": data,
+                                "numero": presupuesto_numero
+                            }
+            except Exception as e:
+                continue
         
         return None
     

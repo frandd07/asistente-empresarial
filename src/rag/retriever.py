@@ -12,22 +12,32 @@ class CustomerHistoryRAG:
     def setup_qa_chain(self):
         """Configura la cadena de QA con RAG"""
         try:
-            retriever = self.vectorstore.get_retriever(k=5)
+            retriever = self.vectorstore.get_retriever(k=8)  # Aumentado para mejor cobertura
             
             # Prompt personalizado para el contexto de empresa de pinturas
-            template = """Eres un asistente de una empresa de pinturas. Tu trabajo es ayudar a consultar el historial de trabajos realizados.
+            template = """Eres un asistente experto de una empresa de pinturas. Tu trabajo es ayudar a consultar el historial de trabajos realizados.
 
 Contexto de trabajos anteriores:
 {context}
 
 Pregunta: {question}
 
-Responde de forma clara y profesional. Si la información no está en el contexto, indícalo amablemente.
-Si te preguntan por un cliente específico, proporciona todos los detalles disponibles (fecha, trabajo realizado, pintura usada, coste, etc.).
-Si te preguntan por un cliente específico, proporciona todos los detalles disponibles.
-IMPORTANTE: Si encuentras números de documento (como PRES-xxxxxxxxxxxxxx), DEBES incluirlos en tu respuesta para que el sistema pueda identificarlos.
+INSTRUCCIONES IMPORTANTES:
+1. Busca de forma flexible: "Ruben" y "Rubén" son la misma persona, ignora tildes y mayúsculas al buscar.
+2. Si encuentras información relevante en el contexto, proporciona TODOS los detalles técnicos disponibles:
+   - Fecha del trabajo
+   - Tipo de trabajo realizado (interior, exterior, fachada, etc.)
+   - Tipo de pintura utilizada
+   - Superficie trabajada (m²)
+   - Coste total con IVA
+   - Estado actual (Presupuestado, Facturado, Pagado, etc.)
+   - Número de documento si existe (PRES-XXXXX)
+3. Si NO encuentras información en el contexto, di claramente que no tienes registros.
+4. NUNCA inventes información que no esté en el contexto.
+5. Sé específico y completo en tu respuesta.
 
 Respuesta:"""
+
             
             PROMPT = PromptTemplate(
                 template=template,

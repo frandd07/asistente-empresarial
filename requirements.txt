@@ -12,3 +12,4 @@ reportlab==4.0.9
 xhtml2pdf==0.2.15
 jinja2
 pypdf2==3.0.1
+langfuse

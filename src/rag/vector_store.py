@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import TextLoader
-from langchain.text_splitter import MarkdownTextSplitter
-from langchain_chroma import Chroma
+from langchain_text_splitters import MarkdownTextSplitter
+from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import os
 import chromadb
@@ -25,8 +25,8 @@ class CustomerHistoryVectorStore:
         documents = loader.load()
         
         markdown_splitter = MarkdownTextSplitter(
-            chunk_size=500,
-            chunk_overlap=50
+            chunk_size=1000,  # Aumentado de 500 para más contexto
+            chunk_overlap=200  # Aumentado de 50 para mejor coherencia
         )
         
         split_docs = markdown_splitter.split_documents(documents)
@@ -95,49 +95,78 @@ class CustomerHistoryVectorStore:
             raise
     
     def load_vectorstore(self):
-        """Carga un vector store existente"""
+        """Carga un vector store existente o lo reconstruye si el archivo fuente ha cambiado"""
         try:
+            # Verificar si existe el archivo de historial
+            if not os.path.exists(self.markdown_path):
+                print(f"⚠️ Archivo {self.markdown_path} no existe. Creando uno vacío...")
+                os.makedirs(os.path.dirname(self.markdown_path) or ".", exist_ok=True)
+                with open(self.markdown_path, 'w', encoding='utf-8') as f:
+                    f.write("# Historial de Clientes\n\n(Sin registros aún)\n")
+            
+            # Obtener timestamp del archivo de historial
+            history_mtime = os.path.getmtime(self.markdown_path)
+            
+            # Verificar si existe el vector store y si es más antiguo que el archivo de historial
+            should_rebuild = False
+            
             if os.path.exists(self.persist_directory):
-                embeddings = self.get_embeddings()
-                
-                chroma_settings = Settings(
-                    anonymized_telemetry=False,
-                    allow_reset=True,
-                    is_persistent=True
-                )
-                
-                # Crear cliente de Chroma
-                client = chromadb.PersistentClient(
-                    path=self.persist_directory,
-                    settings=chroma_settings
-                )
-                
-                self.vectorstore = Chroma(
-                    persist_directory=self.persist_directory,
-                    embedding_function=embeddings,
-                    collection_name="customer_history",
-                    client=client
-                )
-                
-                print("✅ Vector store cargado desde disco")
-                return self.vectorstore
+                try:
+                    # Obtener timestamp del directorio del vector store
+                    vectorstore_mtime = os.path.getmtime(self.persist_directory)
+                    
+                    # Si el historial es más nuevo, necesitamos reconstruir
+                    if history_mtime > vectorstore_mtime:
+                        print(f"📝 Detectado cambio en {self.markdown_path}, reconstruyendo vector store...")
+                        should_rebuild = True
+                except:
+                    should_rebuild = True
             else:
                 print("⚠️ No existe vector store, creando uno nuevo...")
+                should_rebuild = True
+            
+            # Si necesitamos reconstruir, hacerlo
+            if should_rebuild:
                 return self.create_vectorstore()
+            
+            # Si no, cargar el existente
+            embeddings = self.get_embeddings()
+            
+            chroma_settings = Settings(
+                anonymized_telemetry=False,
+                allow_reset=True,
+                is_persistent=True
+            )
+            
+            # Crear cliente de Chroma
+            client = chromadb.PersistentClient(
+                path=self.persist_directory,
+                settings=chroma_settings
+            )
+            
+            self.vectorstore = Chroma(
+                persist_directory=self.persist_directory,
+                embedding_function=embeddings,
+                collection_name="customer_history",
+                client=client
+            )
+            
+            print("✅ Vector store cargado desde disco")
+            return self.vectorstore
                 
         except Exception as e:
             print(f"⚠️ Error cargando vector store: {e}")
             print("🔄 Recreando vector store...")
             return self.create_vectorstore()
     
-    def get_retriever(self, k=5):
+    def get_retriever(self, k=8):  # Aumentado de 5 a 8
         """Obtiene el retriever configurado"""
         if not self.vectorstore:
             self.load_vectorstore()
         
         retriever = self.vectorstore.as_retriever(
-            search_type="mmr",
-            search_kwargs={"k": k, "fetch_k": 10}
+            search_type="similarity",  # Cambiado de mmr a similarity para más relevancia
+            search_kwargs={"k": k}
         )
         
         return retriever
