@@ -1,72 +1,90 @@
 
-## Presupuestado - Ignacio Fernandez (03/12/2025 19:41)
+## Presupuestado - Ignacio Fernández (03/12/2025 20:14)
 
-**Cliente:** Ignacio Fernandez
-**NIF/CIF:** 65876546L
+**Cliente:** Ignacio Fernández
+**NIF/CIF:** 67587654B
 **Email:** No especificado
-**Dirección:** CALLE loco, 23
+**Dirección:** calle olivo 33
 
 **Detalles del trabajo:**
-- Área: 156.0 m²
-- Tipo de trabajo: exterior
-- Tipo de pintura: plástica
+- Área: 110.0 m²
+- Tipo de trabajo: fachada
+- Tipo de pintura: acrílica
 - Zona: Interior
 
-**Total con IVA:** €2778.61
+**Total con IVA:** €2867.94
 **Estado actual:** Presupuestado
 
 ---
 
-## Presupuestado - Freddy Junior (03/12/2025 19:42)
+## Presupuestado - Fredy Junior (03/12/2025 20:20)
 
-**Cliente:** Freddy Junior
-**NIF/CIF:** 76543219L
+**Cliente:** Fredy Junior
+**NIF/CIF:** 657484987M
 **Email:** No especificado
-**Dirección:** calle yo, 11
+**Dirección:** calle larios 22
 
 **Detalles del trabajo:**
-- Área: 100.0 m²
-- Tipo de trabajo: exterior
-- Tipo de pintura: acrílica
+- Área: 110.0 m²
+- Tipo de trabajo: fachada
+- Tipo de pintura: plástica
 - Zona: Interior
 
-**Total con IVA:** €2449.04
+**Total con IVA:** €2117.92
 **Estado actual:** Presupuestado
 
 ---
 
-## Facturado y Pendiente de Pago - Freddy Junior (03/12/2025 19:44)
+## Facturado y Pendiente de Pago - Fredy Junior (03/12/2025 20:25)
 
-**Cliente:** Freddy Junior
-**NIF/CIF:** 76543219L
+**Cliente:** Fredy Junior
+**NIF/CIF:** 657484987M
 **Email:** No especificado
-**Dirección:** calle yo, 11
+**Dirección:** calle larios 22
 
 **Detalles del trabajo:**
-- Área: 100.0 m²
-- Tipo de trabajo: exterior
-- Tipo de pintura: acrílica
+- Área: 110.0 m²
+- Tipo de trabajo: fachada
+- Tipo de pintura: plástica
 - Zona: Interior
 
-**Total con IVA:** €2449.04
+**Total con IVA:** €2117.92
 **Estado actual:** Facturado y Pendiente de Pago
 
 ---
 
-## Facturado y Pendiente de Pago - Ignacio Fernandez (03/12/2025 19:57)
+## Facturado y Pendiente de Pago - Fredy Junior (03/12/2025 20:29)
 
-**Cliente:** Ignacio Fernandez
-**NIF/CIF:** 65876546L
+**Cliente:** Fredy Junior
+**NIF/CIF:** 657484987M
 **Email:** No especificado
-**Dirección:** CALLE loco, 23
+**Dirección:** calle larios 22
 
 **Detalles del trabajo:**
-- Área: 156.0 m²
-- Tipo de trabajo: exterior
+- Área: 110.0 m²
+- Tipo de trabajo: fachada
 - Tipo de pintura: plástica
 - Zona: Interior
 
-**Total con IVA:** €2778.61
+**Total con IVA:** €2117.92
 **Estado actual:** Facturado y Pendiente de Pago
+
+---
+
+## Factura Pagada - Fredy Junior (03/12/2025 20:32)
+
+**Cliente:** Fredy Junior
+**NIF/CIF:** 657484987M
+**Email:** No especificado
+**Dirección:** calle larios 22
+
+**Detalles del trabajo:**
+- Área: 110.0 m²
+- Tipo de trabajo: fachada
+- Tipo de pintura: plástica
+- Zona: Interior
+
+**Total con IVA:** €2117.92
+**Estado actual:** Factura Pagada
 
 ---

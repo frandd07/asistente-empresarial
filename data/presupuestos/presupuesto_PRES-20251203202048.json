@@ -1,0 +1,33 @@
+{
+    "presupuesto_numero": "PRES-20251203202048",
+    "cliente": {
+        "nombre": "Fredy Junior",
+        "nif": "657484987M",
+        "email": "No especificado",
+        "direccion": "calle larios 22"
+    },
+    "detalles_trabajo": {
+        "area_m2": 110.0,
+        "tipo_pintura": "plástica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 1309.0,
+        "costo_mano_obra": 165.0,
+        "costos_adicionales": {
+            "preparación": 196.35,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 1750.35,
+        "total_sin_iva": 1750.35,
+        "iva_21": 367.57,
+        "total_con_iva": 2117.92
+    },
+    "timestamp": "2025-12-03T20:20:48.649851",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pagada",
+    "fechaFacturacion": "2025-12-03T20:29:26.543884",
+    "fechaPago": "2025-12-03T20:32:35.188201"
+}
