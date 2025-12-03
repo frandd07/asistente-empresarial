@@ -185,9 +185,7 @@ Costos adicionales:
 ────────────────────────────────────────────────
 
 CÁLCULO FINAL:
-Subtotal: {presupuesto['subtotal_sin_ganancia']} €
-Margen de ganancia (30%): {presupuesto['margen_ganancia']} €
-Base imponible: {presupuesto['total_sin_iva']} €
+
 IVA (21%): {presupuesto['iva_21']} €
 
 TOTAL FACTURA: {presupuesto['total_con_iva']} €
@@ -272,7 +270,7 @@ def generar_pdf_presupuesto(presupuesto_dict: dict) -> dict:
             cliente_email=cliente['email'],
             items=items,
             subtotal=f"{presupuesto['subtotal_sin_ganancia']:.2f}",
-            margen=f"{presupuesto['margen_ganancia']:.2f}",
+
             base_imponible=f"{presupuesto['total_sin_iva']:.2f}",
             iva=f"{presupuesto['iva_21']:.2f}",
             total=f"{presupuesto['total_con_iva']:.2f}"
@@ -676,7 +674,7 @@ def generar_pdf_presupuesto_streamlit(presupuesto_dict: dict) -> dict:
             cliente_email=cliente['email'],
             items=items,
             subtotal=f"{presupuesto['subtotal_sin_ganancia']:.2f}",
-            margen=f"{presupuesto['margen_ganancia']:.2f}",
+
             base_imponible=f"{presupuesto['total_sin_iva']:.2f}",
             iva=f"{presupuesto['iva_21']:.2f}",
             total=f"{presupuesto['total_con_iva']:.2f}"

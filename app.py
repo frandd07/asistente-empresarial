@@ -42,8 +42,8 @@ def buscar_presupuesto_por_rag(prompt: str):
     try:
         rag = initialize_rag()
         
-        # Construir query optimizada para RAG
-        query = f"Busca presupuestos pendientes (estado: Presupuestado) para: {prompt}"
+        # Construir query más natural para mejorar la búsqueda semántica
+        query = f"Estado del presupuesto para: {prompt}"
         
         result = rag.query(query)
         respuesta_rag = result.get("answer", "")
@@ -88,8 +88,8 @@ def buscar_factura_por_rag(prompt: str):
     try:
         rag = initialize_rag()
         
-        # Construir query optimizada para RAG
-        query = f"Busca facturas pendientes de pago (estadoPago: Pendiente) para: {prompt}"
+        # Construir query más natural para mejorar la búsqueda semántica
+        query = f"Estado de la factura o presupuesto para: {prompt}"
         
         result = rag.query(query)
         respuesta_rag = result.get("answer", "")
@@ -215,47 +215,72 @@ def handle_budget_conversation(prompt, history):
     agent = initialize_budget_agent()
     response_text = agent.generate_budget(prompt, chat_history=history)
     
-    try:
-        # Si el agente devuelve JSON, la recopilación de datos ha terminado
-        cleaned_response = response_text.strip().replace("``````", "").strip()
-        data_collected = json.loads(cleaned_response)
+    # Intentar extraer el JSON de la respuesta del agente de forma más robusta
+    json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+    
+    if json_match:
+        json_str = json_match.group()
         
-        st.session_state.messages.append({"role": "assistant", "content": "Perfecto! Tengo todos los datos. Procesando todo automáticamente..."})
-        
-        with st.spinner("Calculando presupuesto, generando PDFs y guardando en historial..."):
-            # 1. Calcular
-            final_budget = calcular_presupuesto(**data_collected)
-            final_budget["estado"] = "Presupuestado"
-            st.session_state.final_budget_dict = final_budget
+        try:
+            data_collected = json.loads(json_str)
+            st.session_state.messages.append({"role": "assistant", "content": "Perfecto! Tengo todos los datos. Procesando todo automáticamente..."})
             
-            # Guardar JSON
-            os.makedirs("data/presupuestos", exist_ok=True)
-            budget_json_path = os.path.join("data/presupuestos", f"presupuesto_{final_budget['presupuesto_numero']}.json")
-            with open(budget_json_path, 'w', encoding='utf-8') as f:
-                json.dump(final_budget, f, indent=4, ensure_ascii=False)
-            
-            st.session_state.budget_json_path = budget_json_path
-            
-            # 2. Generar PDF
-            pdf_result = generar_pdf_presupuesto_streamlit(final_budget)
-            
-            if pdf_result["estado"] == "éxito":
-                with open(pdf_result["ruta_completa"], 'rb') as f:
-                    st.session_state.pdf_bytes = f.read()
-            
-            st.session_state.invoice_pdf_bytes = None
-            
-            # 3. Guardar en historial
-            guardar_resultado = guardar_presupuesto_en_historial(final_budget)
-            
-            if guardar_resultado["estado"] == "éxito":
-                rebuild_customer_history_vectorstore()
-                st.cache_resource.clear()
-                st.session_state.messages.append({"role": "assistant", "content": "✅ Presupuesto generado! Puedes descargarlo. Si deseas aceptarlo y generar la factura, házmelo saber."})
+            with st.spinner("Calculando presupuesto, generando PDFs y guardando en historial..."):
+                # 1. Calcular
+                final_budget = calcular_presupuesto(**data_collected)
+                final_budget["estado"] = "Presupuestado"
+                st.session_state.final_budget_dict = final_budget
+                
+                # Guardar JSON
+                os.makedirs("data/presupuestos", exist_ok=True)
+                budget_json_path = os.path.join("data/presupuestos", f"presupuesto_{final_budget['presupuesto_numero']}.json")
+                with open(budget_json_path, 'w', encoding='utf-8') as f:
+                    json.dump(final_budget, f, indent=4, ensure_ascii=False)
+                
+                st.session_state.budget_json_path = budget_json_path
+                
+                # 2. Generar PDF
+                pdf_result = generar_pdf_presupuesto_streamlit(final_budget)
+                
+                if pdf_result["estado"] == "éxito":
+                    with open(pdf_result["ruta_completa"], 'rb') as f:
+                        st.session_state.pdf_bytes = f.read()
+                    st.session_state.messages.append({"role": "assistant", "content": f"✅ Presupuesto PDF '{pdf_result['archivo']}' generado."})
+                else:
+                    # Log the error and inform the user
+                    error_message = pdf_result.get("error", "Error desconocido al generar el PDF.")
+                    st.session_state.messages.append({"role": "assistant", "content": f"❌ Error al generar el presupuesto PDF: {error_message}"})
+                    st.session_state.pdf_bytes = None # Ensure it's None if generation failed
+                    # Task is not completed if PDF generation fails, so we ensure task_completed is not set to True later if PDF failed.
+
+                # 3. Guardar en historial (this should still happen even if PDF fails, as it's a separate step)
+                guardar_resultado = guardar_presupuesto_en_historial(final_budget)
+                
+                if guardar_resultado["estado"] == "éxito":
+                    rebuild_customer_history_vectorstore()
+                    st.cache_resource.clear()
+                    # Only mark task as completed and show success message if PDF was also successful
+                    if st.session_state.pdf_bytes:
+                        st.session_state.messages.append({"role": "assistant", "content": "✅ Presupuesto generado! Puedes descargarlo. Si deseas aceptarlo y generar la factura, házmelo saber."})
+                        st.session_state.task_completed = True
+                    else:
+                        # If PDF failed but history saved, still inform user about history save but not task completion
+                        st.session_state.messages.append({"role": "assistant", "content": "✅ Presupuesto guardado en historial (PDF no generado)."})
+                        st.session_state.task_completed = False # Task is not truly completed if PDF failed
+                else:
+                    # Log error saving to history
+                    error_message = guardar_resultado.get("error", "Error desconocido al guardar historial.")
+                    st.session_state.messages.append({"role": "assistant", "content": f"❌ Error al guardar en el historial de cliente: {error_message}"})
+                    st.session_state.task_completed = False # Task failed
+                
                 st.session_state.current_task = None
-                st.session_state.task_completed = True
+        
+        except json.JSONDecodeError:
+            # Si el JSON extraído es inválido, podría ser parte de la conversación
+            st.session_state.messages.append({"role": "assistant", "content": response_text})
             
-    except json.JSONDecodeError:
+    else:
+        # Si no hay JSON, es una pregunta del agente
         st.session_state.messages.append({"role": "assistant", "content": response_text})
 
 
@@ -450,6 +475,14 @@ if st.session_state.task_completed and (st.session_state.pdf_bytes or st.session
                 file_name=f"presupuesto_{st.session_state.final_budget_dict['presupuesto_numero']}.pdf",
                 mime="application/pdf",
                 type="primary"
+            )
+        else:
+            st.download_button(
+                label="📄 Descargar Presupuesto PDF",
+                data=b"",
+                file_name="presupuesto.pdf",
+                mime="application/pdf",
+                disabled=True
             )
     
     with col2:

@@ -1,0 +1,30 @@
+{
+    "presupuesto_numero": "PRES-20251203175942",
+    "cliente": {
+        "nombre": "Jose Carmona",
+        "nif": "65876453M",
+        "email": "No especificado",
+        "direccion": "Calle locura, 21"
+    },
+    "detalles_trabajo": {
+        "area_m2": 23.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 386.4,
+        "costo_mano_obra": 34.5,
+        "costos_adicionales": {
+            "preparación": 57.96,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 558.86,
+        "total_sin_iva": 558.86,
+        "iva_21": 117.36,
+        "total_con_iva": 676.22
+    },
+    "timestamp": "2025-12-03T17:59:42.097690",
+    "estado": "Presupuestado"
+}

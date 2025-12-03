@@ -1,0 +1,30 @@
+{
+    "presupuesto_numero": "PRES-20251203181924",
+    "cliente": {
+        "nombre": "Alfon Gonzalez",
+        "nif": "76587657B",
+        "email": "No especificado",
+        "direccion": "calle monti 22"
+    },
+    "detalles_trabajo": {
+        "area_m2": 33.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "exterior",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 514.8,
+        "costo_mano_obra": 49.5,
+        "costos_adicionales": {
+            "preparación": 77.22,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 721.52,
+        "total_sin_iva": 721.52,
+        "iva_21": 151.52,
+        "total_con_iva": 873.04
+    },
+    "timestamp": "2025-12-03T18:19:24.328496",
+    "estado": "Presupuestado"
+}

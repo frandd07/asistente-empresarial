@@ -1,0 +1,30 @@
+{
+    "presupuesto_numero": "PRES-20251203181049",
+    "cliente": {
+        "nombre": "Gabriel Suazo Lopez",
+        "nif": "65787654B",
+        "email": "No especificado",
+        "direccion": "Calle Larios 22"
+    },
+    "detalles_trabajo": {
+        "area_m2": 45.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "exterior",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 702.0,
+        "costo_mano_obra": 67.5,
+        "costos_adicionales": {
+            "preparación": 105.3,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 954.8,
+        "total_sin_iva": 954.8,
+        "iva_21": 200.51,
+        "total_con_iva": 1155.31
+    },
+    "timestamp": "2025-12-03T18:10:49.095149",
+    "estado": "Presupuestado"
+}

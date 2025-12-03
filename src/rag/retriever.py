@@ -12,7 +12,7 @@ class CustomerHistoryRAG:
     def setup_qa_chain(self):
         """Configura la cadena de QA con RAG"""
         try:
-            retriever = self.vectorstore.get_retriever(k=3)
+            retriever = self.vectorstore.get_retriever(k=5)
             
             # Prompt personalizado para el contexto de empresa de pinturas
             template = """Eres un asistente de una empresa de pinturas. Tu trabajo es ayudar a consultar el historial de trabajos realizados.
@@ -24,7 +24,8 @@ Pregunta: {question}
 
 Responde de forma clara y profesional. Si la información no está en el contexto, indícalo amablemente.
 Si te preguntan por un cliente específico, proporciona todos los detalles disponibles (fecha, trabajo realizado, pintura usada, coste, etc.).
-IMPORTANTE: Si encuentras números de documento (como PRES-20251202193045), inclúyelos SIEMPRE en tu respuesta.
+Si te preguntan por un cliente específico, proporciona todos los detalles disponibles.
+IMPORTANTE: Si encuentras números de documento (como PRES-xxxxxxxxxxxxxx), DEBES incluirlos en tu respuesta para que el sistema pueda identificarlos.
 
 Respuesta:"""
             

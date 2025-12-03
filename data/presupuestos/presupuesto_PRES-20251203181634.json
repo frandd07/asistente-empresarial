@@ -1,0 +1,30 @@
+{
+    "presupuesto_numero": "PRES-20251203181634",
+    "cliente": {
+        "nombre": "Batista Mendy",
+        "nif": "67584763b",
+        "email": "No especificado",
+        "direccion": "calle asies, 22"
+    },
+    "detalles_trabajo": {
+        "area_m2": 344.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 5779.2,
+        "costo_mano_obra": 516.0,
+        "costos_adicionales": {
+            "preparación": 866.88,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 7242.08,
+        "total_sin_iva": 7242.08,
+        "iva_21": 1520.84,
+        "total_con_iva": 8762.92
+    },
+    "timestamp": "2025-12-03T18:16:34.723729",
+    "estado": "Presupuestado"
+}

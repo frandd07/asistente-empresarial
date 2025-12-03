@@ -1,0 +1,32 @@
+{
+    "presupuesto_numero": "PRES-20251203175407",
+    "cliente": {
+        "nombre": "Andres Castrin",
+        "nif": "6548763M",
+        "email": "No especificado",
+        "direccion": "calle werty, 22"
+    },
+    "detalles_trabajo": {
+        "area_m2": 12.0,
+        "tipo_pintura": "plástica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 142.8,
+        "costo_mano_obra": 18.0,
+        "costos_adicionales": {
+            "preparación": 21.42,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 262.22,
+        "total_sin_iva": 262.22,
+        "iva_21": 55.07,
+        "total_con_iva": 317.29
+    },
+    "timestamp": "2025-12-03T17:54:07.805651",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pendiente",
+    "fechaFacturacion": "2025-12-03T17:55:20.221770"
+}

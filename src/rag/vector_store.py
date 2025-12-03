@@ -49,7 +49,10 @@ class CustomerHistoryVectorStore:
             # Limpiar el directorio si existe para evitar problemas de tenant
             if os.path.exists(self.persist_directory):
                 print(f"🧹 Limpiando vector store anterior en {self.persist_directory}...")
-                shutil.rmtree(self.persist_directory)
+                try:
+                    shutil.rmtree(self.persist_directory)
+                except OSError as e:
+                    print(f"⚠️ No se pudo eliminar el directorio (posible bloqueo de Windows): {e}")
             
             documents = self.load_and_split_documents()
             embeddings = self.get_embeddings()
@@ -127,21 +130,17 @@ class CustomerHistoryVectorStore:
             print("🔄 Recreando vector store...")
             return self.create_vectorstore()
     
-    def get_retriever(self, k=3):
+    def get_retriever(self, k=5):
         """Obtiene el retriever configurado"""
         if not self.vectorstore:
             self.load_vectorstore()
         
         retriever = self.vectorstore.as_retriever(
-            search_type="similarity",
-            search_kwargs={"k": k}
+            search_type="mmr",
+            search_kwargs={"k": k, "fetch_k": 10}
         )
         
         return retriever
-
-
-# ============== FUNCIÓN A NIVEL DE MÓDULO ==============
-
 def rebuild_customer_history_vectorstore(
     markdown_path: str = "data/customer_history.md",
     persist_directory: str = "./chroma_db",
