@@ -15,7 +15,12 @@ from src.utils.history_manager import guardar_presupuesto_en_historial
 from src.rag.vector_store import rebuild_customer_history_vectorstore
 
 # Configuración de la página
-st.set_page_config(page_title=" Entre Brochas", layout="wide")
+st.set_page_config(
+    page_title="Entre Brochas | Asistente Empresarial", 
+    page_icon="public/logo.png",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Inicialización de agentes con cache
 @st.cache_resource
@@ -382,8 +387,205 @@ def handle_margins_query(prompt, history_text):
 
 # ============== UI PRINCIPAL ==============
 
-st.title("Entre brochas")
-st.markdown("Soy tu asistente inteligente. Puedes pedirme un presupuesto, consultar el historial de un cliente o analizar márgenes de un trabajo, todo en este chat.")
+# CSS Personalizado - Paleta Profesional
+st.markdown("""
+<style>
+    /* Ocultar elementos por defecto de Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Contenedor principal con marca de agua */
+    .main {
+        background: #f8f9fa;
+        position: relative;
+    }
+    
+    .main::before {
+        content: '';
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        height: 400px;
+        background-image: url('data:image/png;base64,LOGO_BASE64');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.03;
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* Asegurar que el contenido esté sobre la marca de agua */
+    .main > div {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Header personalizado */
+    .custom-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .custom-header img {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        background: white;
+        padding: 8px;
+    }
+    
+    .custom-header-text {
+        flex: 1;
+    }
+    
+    .custom-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .custom-header p {
+        color: rgba(255,255,255,0.85);
+        margin: 0.25rem 0 0 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Chat container */
+    .stChatMessage {
+        background: white !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin: 0.5rem 0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        border: 1px solid #e5e7eb !important;
+    }
+    
+    /* User messages */
+    .stChatMessage[data-testid="user-message"] {
+        background: #1e40af !important;
+        color: white !important;
+        border: none !important;
+    }
+    
+    .stChatMessage[data-testid="user-message"] p {
+        color: white !important;
+    }
+    
+    /* Assistant messages */
+    .stChatMessage[data-testid="assistant-message"] {
+        background: white !important;
+        border-left: 3px solid #2563eb !important;
+    }
+    
+    /* Personalizar avatares */
+    .stChatMessage img {
+        border-radius: 8px !important;
+    }
+    
+    /* Input de chat */
+    .stChatInputContainer {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+    }
+    
+    /* Botones */
+    .stButton > button {
+        background: #1e40af;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .stButton > button:hover {
+        background: #1e3a8a;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+    }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: #ffffff;
+        border-right: 1px solid #e5e7eb;
+    }
+    
+    /* Download buttons */
+    .stDownloadButton > button {
+        background: #059669;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    .stDownloadButton > button:hover {
+        background: #047857;
+    }
+    
+    /* Success/Info boxes */
+    .stAlert {
+        border-radius: 6px;
+        border-left: 3px solid #2563eb;
+    }
+    
+    /* Spinners */
+    .stSpinner > div {
+        border-top-color: #2563eb !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Cargar logo para marca de agua y avatares
+logo_path = "public/logo.png"
+logo_base64 = ""
+if os.path.exists(logo_path):
+    import base64
+    with open(logo_path, "rb") as img_file:
+        logo_base64 = base64.b64encode(img_file.read()).decode()
+    
+    # Inyectar el logo en el CSS como marca de agua
+    st.markdown(f"""
+    <style>
+        .main::before {{
+            background-image: url('data:image/png;base64,{logo_base64}') !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# Header personalizado con logo
+if logo_base64:
+    st.markdown(f"""
+    <div class="custom-header">
+        <img src="data:image/png;base64,{logo_base64}" alt="Logo">
+        <div class="custom-header-text">
+            <h1>Entre Brochas</h1>
+            <p>Asistente profesional para gestión empresarial</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <div class="custom-header">
+        <div class="custom-header-text">
+            <h1>Entre Brochas</h1>
+            <p>Asistente profesional para gestión empresarial</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
@@ -435,17 +637,22 @@ if "last_rag_response_content" not in st.session_state:
 if "rag_refresh" not in st.session_state:
     st.session_state.rag_refresh = False
 
-# Mostrar historial del chat
+# Mostrar historial del chat con avatares personalizados
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if message["role"] == "assistant" and logo_base64:
+        # Usar el logo como avatar del asistente
+        with st.chat_message(message["role"], avatar=f"data:image/png;base64,{logo_base64}"):
+            st.markdown(message["content"])
+    else:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
 # Input del usuario
 if prompt := st.chat_input("¿Cómo puedo ayudarte?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").markdown(prompt)
     
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=f"data:image/png;base64,{logo_base64}" if logo_base64 else None):
         # Lógica principal de enrutamiento
         if st.session_state.current_task is None:
             router = initialize_router_agent()
