@@ -20,7 +20,7 @@ class BudgetCalculatorAgent:
     def setup_agent(self):
         """Configura el agente con el nuevo system prompt enfocado en devolver JSON."""
         
-        system_prompt = """Eres un asistente experto en recopilar información para crear presupuestos de "PINTURAS PROFESIONALES S.L.".
+        system_prompt = """Eres un asistente experto en recopilar información para crear presupuestos de "Entre Brochas".
 
 TU ÚNICA MISIÓN:
 Conversar con el cliente hasta obtener TODOS los datos necesarios. Una vez que los tengas, tu ÚLTIMA respuesta debe ser ÚNICAMENTE un JSON con la información.

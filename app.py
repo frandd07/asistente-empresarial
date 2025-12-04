@@ -15,7 +15,7 @@ from src.utils.history_manager import guardar_presupuesto_en_historial
 from src.rag.vector_store import rebuild_customer_history_vectorstore
 
 # Configuración de la página
-st.set_page_config(page_title="Asistente Empresarial Unificado", page_icon="💼", layout="wide")
+st.set_page_config(page_title=" Entre Brochas", layout="wide")
 
 # Inicialización de agentes con cache
 @st.cache_resource
@@ -382,7 +382,7 @@ def handle_margins_query(prompt, history_text):
 
 # ============== UI PRINCIPAL ==============
 
-st.title("💼 Asistente Empresarial Unificado")
+st.title("Entre brochas")
 st.markdown("Soy tu asistente inteligente. Puedes pedirme un presupuesto, consultar el historial de un cliente o analizar márgenes de un trabajo, todo en este chat.")
 
 # Sidebar

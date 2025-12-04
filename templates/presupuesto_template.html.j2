@@ -6,202 +6,253 @@
     <style>
         @page {
             size: A4;
-            margin: 1cm;
+            margin: 15mm;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-            color: #333;
-            font-size: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            font-size: 10pt;
+            line-height: 1.4;
         }
-        .container {
-            width: 100%;
-        }
-        .header, .footer {
-            text-align: center;
-            width: 100%;
-            position: fixed;
-        }
+        
         .header {
-            top: 0;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
         }
-        .footer {
-            bottom: 0;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-            font-size: 10px;
-            color: #777;
+        
+        .header h1 {
+            font-size: 24pt;
+            font-weight: 300;
+            letter-spacing: 1px;
         }
-        .company-logo {
-            max-width: 150px;
-            max-height: 70px;
+        
+        .header p {
+            font-size: 9pt;
+            opacity: 0.9;
+            margin-top: 3px;
         }
-        .document-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-            margin: 20px 0;
+        
+        .info-section {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .info-box {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding: 10px 15px;
+        }
+        
+        .info-box:first-child {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            font-size: 11pt;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .info-box p {
+            margin: 3px 0;
+            font-size: 9pt;
+        }
+        
+        .document-info {
             text-align: right;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
         }
-        .details {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            margin-bottom: 40px;
+        
+        .document-info p {
+            margin: 2px 0;
+            font-size: 9pt;
         }
-        .company-details, .client-details {
-            width: 48%;
+        
+        .document-info strong {
+            color: #667eea;
         }
-        .details h3 {
-            font-size: 14px;
-            font-weight: bold;
-            color: #007bff;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-        .details p {
-            margin: 4px 0;
-            line-height: 1.6;
-        }
-        .items-table {
+        
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin: 15px 0;
         }
-        .items-table th, .items-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 10px 8px;
             text-align: left;
+            font-size: 9pt;
+            font-weight: 600;
         }
-        .items-table thead {
+        
+        th.right {
+            text-align: right;
+        }
+        
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 9pt;
+        }
+        
+        td.right {
+            text-align: right;
+        }
+        
+        tbody tr:hover {
             background-color: #f8f9fa;
         }
-        .items-table th {
-            font-weight: bold;
-        }
-        .items-table .text-right {
-            text-align: right;
-        }
-        .totals {
-            margin-top: 30px;
+        
+        .totals-section {
+            margin-top: 10px;
             float: right;
-            width: 40%;
+            width: 280px;
         }
-        .totals-table {
+        
+        .totals-row {
+            display: table;
             width: 100%;
-            border-collapse: collapse;
+            padding: 6px 0;
         }
-        .totals-table td {
-            padding: 8px;
-        }
-        .totals-table .label {
+        
+        .totals-label {
+            display: table-cell;
             text-align: right;
-            font-weight: bold;
+            padding-right: 15px;
+            font-size: 9pt;
         }
-        .totals-table .value {
+        
+        .totals-value {
+            display: table-cell;
             text-align: right;
             width: 100px;
+            font-size: 9pt;
+            font-weight: 600;
         }
-        .totals-table .total-row {
-            background-color: #007bff;
+        
+        .total-final {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 5px;
         }
-        .conditions {
-            margin-top: 50px; /* Ajustado para más espacio */
-            padding: 15px;
+        
+        .total-final .totals-label,
+        .total-final .totals-value {
+            font-size: 11pt;
+            font-weight: 700;
+        }
+        
+        .footer-note {
+            clear: both;
+            margin-top: 15px;
+            padding: 12px 15px;
             background-color: #f8f9fa;
-            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 8pt;
+            color: #6c757d;
         }
-        .conditions h4 {
-            font-weight: bold;
-            margin-bottom: 10px;
+        
+        .footer-note p {
+            margin: 3px 0;
+        }
+        
+        .footer-note strong {
+            color: #495057;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <p>PINTURAS PROFESIONALES S.L. - Presupuestos</p>
+        <h1>PRESUPUESTO</h1>
+        <p>Entre Brochas - Pinturas Profesionales</p>
     </div>
-
-    <div class="container">
-        <h1 class="document-title">PRESUPUESTO</h1>
-
-        <div style="text-align: right; margin-bottom: 30px;">
-            <p><strong>Nº Presupuesto:</strong> {{ presupuesto_numero }}</p>
-            <p><strong>Fecha:</strong> {{ fecha }}</p>
-        </div>
-
-        <div class="details">
-            <div class="company-details">
-                <h3>Nuestra Empresa</h3>
-                <p><strong>PINTURAS PROFESIONALES S.L.</strong></p>
-                <p>CIF: B12345678</p>
-                <p>Calle del Pintor 23, 28015 Madrid</p>
-                <p>+34 910 123 456</p>
-                <p>presupuestos@pinturaspro.es</p>
-            </div>
-            <div class="client-details">
-                <h3>Cliente</h3>
-                <p><strong>{{ cliente_nombre }}</strong></p>
-                <p>NIF/CIF: {{ cliente_nif }}</p>
-                <p>{{ cliente_direccion }}</p>
-                <p>{{ cliente_email }}</p>
-            </div>
-        </div>
-
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>Concepto</th>
-                    <th class="text-right">Cantidad</th>
-                    <th class="text-right">Precio Unitario</th>
-                    <th class="text-right">Importe</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    <td>{{ item.concepto }}</td>
-                    <td class="text-right">{{ item.cantidad }}</td>
-                    <td class="text-right">{{ item.precio_unitario }}</td>
-                    <td class="text-right">{{ item.importe }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="totals">
-            <table class="totals-table">
-                <tr>
-                    <td class="label">Subtotal / Base Imponible</td>
-                    <td class="value">{{ subtotal }} €</td>
-                </tr>
-                <tr>
-                    <td class="label">IVA (21%)</td>
-                    <td class="value">{{ iva }} €</td>
-                </tr>
-                <tr class="total-row">
-                    <td class="label">TOTAL</td>
-                    <td class="value">{{ total }} €</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="conditions">
-            <h4>Condiciones Generales</h4>
-            <p><strong>Validez de la oferta:</strong> 30 días desde la fecha de emisión.</p>
-            <p><strong>Forma de pago:</strong> 50% a la aceptación del presupuesto, 50% a la finalización del trabajo.</p>
-            <p>Cualquier trabajo no estipulado en este presupuesto se facturará aparte.</p>
-        </div>
-
+    
+    <div class="document-info">
+        <p><strong>Nº Presupuesto:</strong> {{ presupuesto_numero }}</p>
+        <p><strong>Fecha:</strong> {{ fecha }}</p>
     </div>
-
-    <div class="footer">
-        <p>Gracias por su confianza.</p>
+    
+    <div class="info-section">
+        <div class="info-box">
+            <h3>Datos de la Empresa</h3>
+            <p><strong>Entre Brochas S.L.</strong></p>
+            <p>CIF: B12345678</p>
+            <p>Calle del Pintor 23, 28015 Madrid</p>
+            <p>Tel: +34 910 123 456</p>
+            <p>presupuestos@entrebrochas.es</p>
+        </div>
+        <div class="info-box">
+            <h3>Datos del Cliente</h3>
+            <p><strong>{{ cliente_nombre }}</strong></p>
+            <p>NIF: {{ cliente_nif }}</p>
+            <p>{{ cliente_direccion }}</p>
+            <p>{{ cliente_email }}</p>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th class="right">Cantidad</th>
+                <th class="right">Precio Unit.</th>
+                <th class="right">Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.concepto }}</td>
+                <td class="right">{{ item.cantidad }}</td>
+                <td class="right">{{ item.precio_unitario }}</td>
+                <td class="right">{{ item.importe }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="totals-section">
+        <div class="totals-row">
+            <div class="totals-label">Base Imponible:</div>
+            <div class="totals-value">{{ base_imponible }} €</div>
+        </div>
+        <div class="totals-row">
+            <div class="totals-label">IVA (21%):</div>
+            <div class="totals-value">{{ iva }} €</div>
+        </div>
+        <div class="totals-row total-final">
+            <div class="totals-label">TOTAL:</div>
+            <div class="totals-value">{{ total }} €</div>
+        </div>
+    </div>
+    
+    <div class="footer-note">
+        <p><strong>Validez:</strong> 30 días | <strong>Pago:</strong> 50% inicio, 50% finalización</p>
+        <p>Trabajos adicionales no incluidos se facturarán aparte. Gracias por su confianza.</p>
     </div>
 </body>
 </html>
