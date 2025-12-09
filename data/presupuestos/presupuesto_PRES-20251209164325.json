@@ -1,0 +1,32 @@
+{
+    "presupuesto_numero": "PRES-20251209164325",
+    "cliente": {
+        "nombre": "Juanlu Sanchez",
+        "nif": "76549872K",
+        "email": "No especificado",
+        "direccion": "Calle Rioja, 22, 47632 Sevilla"
+    },
+    "detalles_trabajo": {
+        "area_m2": 220.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "interior",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 2640.0,
+        "costo_mano_obra": 330.0,
+        "costos_adicionales": {
+            "preparación": 396.0,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 3446.0,
+        "total_sin_iva": 3446.0,
+        "iva_21": 723.66,
+        "total_con_iva": 4169.66
+    },
+    "timestamp": "2025-12-09T16:43:25.704274",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pendiente",
+    "fechaFacturacion": "2025-12-09T16:46:57.609179"
+}
