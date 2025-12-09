@@ -1,0 +1,33 @@
+{
+    "presupuesto_numero": "PRES-20251209162240",
+    "cliente": {
+        "nombre": "Domingo Duarte Jimenez",
+        "nif": "87654321L",
+        "email": "No especificado",
+        "direccion": "calle sevilla, 11"
+    },
+    "detalles_trabajo": {
+        "area_m2": 60.0,
+        "tipo_pintura": "plastica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 840.0,
+        "costo_mano_obra": 90.0,
+        "costos_adicionales": {
+            "preparación": 126.0,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 1136.0,
+        "total_sin_iva": 1136.0,
+        "iva_21": 238.56,
+        "total_con_iva": 1374.56
+    },
+    "timestamp": "2025-12-09T16:22:40.135512",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pagada",
+    "fechaFacturacion": "2025-12-09T16:23:54.770061",
+    "fechaPago": "2025-12-09T16:24:35.861028"
+}

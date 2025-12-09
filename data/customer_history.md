@@ -1,36 +1,18 @@
 
-## Factura Pagada - Ignacio Fernández (04/12/2025 16:28)
+## Factura Pagada - Domingo Duarte Jimenez (09/12/2025 16:24)
 
-**Cliente:** Ignacio Fernández
-**NIF/CIF:** 67587654B
+**Cliente:** Domingo Duarte Jimenez
+**NIF/CIF:** 87654321L
 **Email:** No especificado
-**Dirección:** calle olivo 33
+**Dirección:** calle sevilla, 11
 
 **Detalles del trabajo:**
-- Área: 110.0 m²
+- Área: 60.0 m²
 - Tipo de trabajo: fachada
-- Tipo de pintura: acrílica
+- Tipo de pintura: plastica
 - Zona: Interior
 
-**Total con IVA:** €2867.94
-**Estado actual:** Factura Pagada
-
----
-
-## Factura Pagada - Fredy Junior (03/12/2025 20:32)
-
-**Cliente:** Fredy Junior
-**NIF/CIF:** 657484987M
-**Email:** No especificado
-**Dirección:** calle larios 22
-
-**Detalles del trabajo:**
-- Área: 110.0 m²
-- Tipo de trabajo: fachada
-- Tipo de pintura: plástica
-- Zona: Interior
-
-**Total con IVA:** €2117.92
+**Total con IVA:** €1374.56
 **Estado actual:** Factura Pagada
 
 ---
