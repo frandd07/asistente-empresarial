@@ -1,6 +1,7 @@
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from src.llm_setup import get_llm
+from src.config import TEMPERATURE_BUDGET
 
 class BudgetCalculatorAgent:
     """
@@ -10,7 +11,7 @@ class BudgetCalculatorAgent:
     """
     
     def __init__(self):
-        self.llm = get_llm(temperature=0.2)
+        self.llm = get_llm(temperature=TEMPERATURE_BUDGET)
         self.agent_executor = None
         
     def _create_tools(self):

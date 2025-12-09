@@ -5,6 +5,7 @@ import os
 import json
 import re
 import glob
+import unicodedata
 
 from src.agents.router_agent import RouterAgent
 from src.rag.retriever import CustomerHistoryRAG
@@ -13,6 +14,7 @@ from src.agents.price_margin_agent import PriceMarginAgent
 from src.agents.autonomous_agent import calcular_presupuesto, generar_pdf_presupuesto_streamlit, generar_pdf_factura_streamlit
 from src.utils.history_manager import guardar_presupuesto_en_historial
 from src.rag.vector_store import rebuild_customer_history_vectorstore
+from src.utils.text_helpers import normalize_text, text_contains_word
 
 # Configuración de la página
 st.set_page_config(
@@ -75,7 +77,6 @@ def buscar_presupuesto_por_rag(prompt: str):
                         }
         
         # Si no encontramos por número PRES, buscar por nombre de cliente en los JSONs
-        import unicodedata
         json_files = glob.glob("data/presupuestos/presupuesto_*.json")
         
         for json_file in json_files:
@@ -85,22 +86,10 @@ def buscar_presupuesto_por_rag(prompt: str):
                     
                     # Verificar que esté en estado "Presupuestado"
                     if data.get("estado", "").lower() == "presupuestado":
-                        cliente_nombre = data.get("cliente", {}).get("nombre", "").lower()
-                        prompt_lower = prompt.lower()
+                        cliente_nombre = data.get("cliente", {}).get("nombre", "")
                         
-                        # Normalizar tildes para comparación
-                        cliente_normalized = ''.join(
-                            c for c in unicodedata.normalize('NFD', cliente_nombre)
-                            if unicodedata.category(c) != 'Mn'
-                        )
-                        prompt_normalized = ''.join(
-                            c for c in unicodedata.normalize('NFD', prompt_lower)
-                            if unicodedata.category(c) != 'Mn'
-                        )
-                        
-                        # Verificar si alguna palabra del nombre aparece en el prompt
-                        palabras_nombre = cliente_normalized.split()
-                        if any(palabra in prompt_normalized for palabra in palabras_nombre if len(palabra) > 3):
+                        # Verificar si el nombre del cliente coincide con el prompt
+                        if text_contains_word(cliente_nombre, prompt, min_word_length=4):
                             presupuesto_numero = data.get("presupuesto_numero")
                             return {
                                 "path": json_file,
@@ -165,24 +154,10 @@ def buscar_factura_por_rag(prompt: str):
                     
                     # Verificar que esté pendiente de pago
                     if data.get("estadoPago", "").lower() == "pendiente":
-                        # Buscar coincidencia de nombre (sin tildes, case-insensitive)
-                        cliente_nombre = data.get("cliente", {}).get("nombre", "").lower()
-                        prompt_lower = prompt.lower()
+                        cliente_nombre = data.get("cliente", {}).get("nombre", "")
                         
-                        # Normalizar tildes para comparación
-                        import unicodedata
-                        cliente_normalized = ''.join(
-                            c for c in unicodedata.normalize('NFD', cliente_nombre)
-                            if unicodedata.category(c) != 'Mn'
-                        )
-                        prompt_normalized = ''.join(
-                            c for c in unicodedata.normalize('NFD', prompt_lower)
-                            if unicodedata.category(c) != 'Mn'
-                        )
-                        
-                        # Verificar si alguna palabra del nombre aparece en el prompt
-                        palabras_nombre = cliente_normalized.split()
-                        if any(palabra in prompt_normalized for palabra in palabras_nombre if len(palabra) > 3):
+                        # Verificar si el nombre del cliente coincide con el prompt
+                        if text_contains_word(cliente_nombre, prompt, min_word_length=4):
                             presupuesto_numero = data.get("presupuesto_numero")
                             return {
                                 "path": json_file,

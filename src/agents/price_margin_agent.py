@@ -1,15 +1,10 @@
-import os
-from langchain_openai import ChatOpenAI
+from src.llm_setup import get_llm
+from src.config import TEMPERATURE_AUTONOMOUS
 
 
 class PriceMarginAgent:
-    def __init__(self, model_name: str = "deepseek/deepseek-chat"):
-        self.llm = ChatOpenAI(
-            model=model_name,
-            api_key=os.getenv("OPENROUTER_API_KEY"),
-            base_url="https://openrouter.ai/api/v1",
-            temperature=0.2,
-        )
+    def __init__(self):
+        self.llm = get_llm(temperature=TEMPERATURE_AUTONOMOUS)
 
     def analyze_margins(
         self,

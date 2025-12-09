@@ -14,16 +14,15 @@ from typing import Optional, Any
 import os
 from datetime import datetime
 import json
+from src.config import MODEL_NAME_DEEPSEEK, OPENROUTER_BASE_URL, TEMPERATURE_AUTONOMOUS
 
-# ============ IMPORTS PARA xhtml2pdf (Compatible Windows) ============
 from jinja2 import Environment, FileSystemLoader
-from xhtml2pdf import pisa  # ← Cambio a xhtml2pdf
+from xhtml2pdf import pisa
 from io import BytesIO
-# =====================================================================
 
-# ============================================================================
-# 1. DEFINIR TOOLS QUE EL AGENTE PUEDE USAR AUTÓNOMAMENTE
-# ============================================================================
+from src.utils.pdf_helpers import generate_pdf_items
+
+# --- Tools del Agente ---
 
 
 def calcular_presupuesto(
@@ -72,14 +71,12 @@ def calcular_presupuesto(
     precio_base = precios_base.get(tipo_pintura.lower(), 10.00)
     multiplicador = multiplicadores.get(tipo_trabajo.lower(), 1.0)
     
-    # Calcular costo de material
     costo_material = area_m2 * precio_base * multiplicador
     
     # Calcular costo de mano de obra (1 pintor = 12€/hora, 8m²/hora)
     horas_trabajo = area_m2 / 8
     costo_mano_obra = horas_trabajo * 12
     
-    # Costos adicionales
     costos_adicionales = {
         "preparación": costo_material * 0.15,
         "transporte": 50.00,
@@ -205,7 +202,7 @@ Plazo de pago: 30 días desde emisión
 @tool
 def generar_pdf_presupuesto(presupuesto_dict: dict) -> dict:
     """
-    ⭐ Genera PDF de PRESUPUESTO con xhtml2pdf (compatible Windows) ⭐
+    Genera PDF de PRESUPUESTO con xhtml2pdf.
     
     Args:
         presupuesto_dict: Diccionario completo del presupuesto
@@ -217,50 +214,16 @@ def generar_pdf_presupuesto(presupuesto_dict: dict) -> dict:
         cliente = presupuesto_dict["cliente"]
         detalles = presupuesto_dict["detalles_trabajo"]
         presupuesto = presupuesto_dict["presupuesto"]
-        
         # Configurar Jinja2
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('presupuesto_template.html.j2')
         
-        # Datos
         presupuesto_numero = f"PRES-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         fecha_actual = datetime.now().strftime("%d/%m/%Y")
         
-        # Items
-        items = [
-            {
-                "concepto": f"Pintura {detalles['tipo_pintura'].title()} - {detalles['tipo_trabajo'].title()}",
-                "cantidad": f"{detalles['area_m2']} m²",
-                "precio_unitario": f"€{presupuesto['costo_material'] / detalles['area_m2']:.2f}",
-                "importe": f"€{presupuesto['costo_material']:.2f}"
-            },
-            {
-                "concepto": "Mano de obra especializada",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costo_mano_obra']:.2f}",
-                "importe": f"€{presupuesto['costo_mano_obra']:.2f}"
-            },
-            {
-                "concepto": "Preparación y acabados",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['preparación']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['preparación']:.2f}"
-            },
-            {
-                "concepto": "Transporte",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['transporte']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['transporte']:.2f}"
-            },
-            {
-                "concepto": "Limpieza final",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}"
-            }
-        ]
+        # Generar items usando la función helper
+        items = generate_pdf_items(presupuesto_dict)
         
-        # Renderizar
         html_content = template.render(
             presupuesto_numero=presupuesto_numero,
             fecha=fecha_actual,
@@ -276,12 +239,10 @@ def generar_pdf_presupuesto(presupuesto_dict: dict) -> dict:
             total=f"{presupuesto['total_con_iva']:.2f}"
         )
         
-        # Generar PDF con xhtml2pdf
         nombre_archivo = f"presupuesto_{cliente['nombre'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         os.makedirs("data/presupuestos", exist_ok=True)
         ruta_pdf = f"data/presupuestos/{nombre_archivo}"
         
-        # Convertir HTML a PDF
         with open(ruta_pdf, "wb") as pdf_file:
             pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
         
@@ -308,7 +269,7 @@ def generar_pdf_presupuesto(presupuesto_dict: dict) -> dict:
 @tool
 def generar_pdf_factura(presupuesto_dict: dict) -> dict:
     """
-    ⭐ Genera PDF de FACTURA con xhtml2pdf (compatible Windows) ⭐
+    Genera PDF de FACTURA con xhtml2pdf.
     
     Args:
         presupuesto_dict: Diccionario completo del presupuesto
@@ -321,48 +282,14 @@ def generar_pdf_factura(presupuesto_dict: dict) -> dict:
         detalles = presupuesto_dict["detalles_trabajo"]
         presupuesto = presupuesto_dict["presupuesto"]
         
-        # Configurar Jinja2
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('factura_template.html.j2')
         
-        # Datos
         factura_numero = f"FAC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         fecha_actual = datetime.now().strftime("%d/%m/%Y")
         
-        # Items
-        items = [
-            {
-                "concepto": f"Pintura {detalles['tipo_pintura'].title()} - {detalles['tipo_trabajo'].title()}",
-                "cantidad": f"{detalles['area_m2']} m²",
-                "precio_unitario": f"€{presupuesto['costo_material'] / detalles['area_m2']:.2f}",
-                "importe": f"€{presupuesto['costo_material']:.2f}"
-            },
-            {
-                "concepto": "Mano de obra especializada",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costo_mano_obra']:.2f}",
-                "importe": f"€{presupuesto['costo_mano_obra']:.2f}"
-            },
-            {
-                "concepto": "Preparación y acabados",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['preparación']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['preparación']:.2f}"
-            },
-            {
-                "concepto": "Transporte",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['transporte']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['transporte']:.2f}"
-            },
-            {
-                "concepto": "Limpieza final",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}"
-            }
-        ]
-        
+        # Generar items usando la función helper
+        items = generate_pdf_items(presupuesto_dict)
         # Renderizar
         html_content = template.render(
             factura_numero=factura_numero,
@@ -377,12 +304,10 @@ def generar_pdf_factura(presupuesto_dict: dict) -> dict:
             total=f"{presupuesto['total_con_iva']:.2f}"
         )
         
-        # Generar PDF con xhtml2pdf
         nombre_archivo = f"factura_{cliente['nombre'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         os.makedirs("data/facturas", exist_ok=True)
         ruta_pdf = f"data/facturas/{nombre_archivo}"
         
-        # Convertir HTML a PDF
         with open(ruta_pdf, "wb") as pdf_file:
             pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
         
@@ -443,10 +368,8 @@ def guardar_en_historial_cliente(presupuesto_dict: dict, ruta_historial: str = "
 
 """
         
-        # Crear directorio si no existe
         os.makedirs(os.path.dirname(ruta_historial) or ".", exist_ok=True)
         
-        # Guardar o actualizar
         if os.path.exists(ruta_historial):
             with open(ruta_historial, "a", encoding="utf-8") as f:
                 f.write(entrada_historial)
@@ -469,9 +392,7 @@ def guardar_en_historial_cliente(presupuesto_dict: dict, ruta_historial: str = "
         }
 
 
-# ============================================================================
-# 2. AGENTE AUTÓNOMO
-# ============================================================================
+# --- Agente Autónomo ---
 
 class AutonomousPresupuestoAgent:
     """
@@ -488,13 +409,12 @@ class AutonomousPresupuestoAgent:
         self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
         
         self.llm = ChatOpenAI(
-            model="deepseek/deepseek-chat",
+            model=MODEL_NAME_DEEPSEEK,
             api_key=self.api_key,
-            base_url="https://openrouter.ai/api/v1",
-            temperature=0.3,
+            base_url=OPENROUTER_BASE_URL,
+            temperature=TEMPERATURE_AUTONOMOUS,
         )
         
-        # Definir herramientas disponibles
         self.tools = [
             calcular_presupuesto,
             generar_texto_factura,
@@ -503,7 +423,6 @@ class AutonomousPresupuestoAgent:
             guardar_en_historial_cliente,
         ]
         
-        # Crear prompt del agente
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """Eres un agente autónomo especializado en generación de presupuestos y facturas para empresa de pinturas.
 
@@ -534,14 +453,12 @@ DATOS MÍNIMOS REQUERIDOS:
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
         
-        # Crear agente
         self.agent = create_tool_calling_agent(
             self.llm,
             self.tools,
             self.prompt
         )
         
-        # Ejecutor del agente
         self.agent_executor = AgentExecutor(
             agent=self.agent,
             tools=self.tools,
@@ -608,9 +525,7 @@ DATOS MÍNIMOS REQUERIDOS:
         
         return acciones if acciones else ["⚙️ Procesamiento completado"]
 
-# ============================================================================
-# FUNCIONES AUXILIARES PARA STREAMLIT (sin @tool)
-# ============================================================================
+# --- Funciones Auxiliares para Streamlit ---
 
 def generar_pdf_presupuesto_streamlit(presupuesto_dict: dict) -> dict:
     """
@@ -622,49 +537,15 @@ def generar_pdf_presupuesto_streamlit(presupuesto_dict: dict) -> dict:
         detalles = presupuesto_dict["detalles_trabajo"]
         presupuesto = presupuesto_dict["presupuesto"]
         
-        # Configurar Jinja2
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('presupuesto_template.html.j2')
         
-        # Datos
         presupuesto_numero = f"PRES-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         fecha_actual = datetime.now().strftime("%d/%m/%Y")
         
-        # Items
-        items = [
-            {
-                "concepto": f"Pintura {detalles['tipo_pintura'].title()} - {detalles['tipo_trabajo'].title()}",
-                "cantidad": f"{detalles['area_m2']} m²",
-                "precio_unitario": f"€{presupuesto['costo_material'] / detalles['area_m2']:.2f}",
-                "importe": f"€{presupuesto['costo_material']:.2f}"
-            },
-            {
-                "concepto": "Mano de obra especializada",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costo_mano_obra']:.2f}",
-                "importe": f"€{presupuesto['costo_mano_obra']:.2f}"
-            },
-            {
-                "concepto": "Preparación y acabados",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['preparación']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['preparación']:.2f}"
-            },
-            {
-                "concepto": "Transporte",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['transporte']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['transporte']:.2f}"
-            },
-            {
-                "concepto": "Limpieza final",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}"
-            }
-        ]
+        # Generar items usando la función helper
+        items = generate_pdf_items(presupuesto_dict)
         
-        # Renderizar
         html_content = template.render(
             presupuesto_numero=presupuesto_numero,
             fecha=fecha_actual,
@@ -680,12 +561,10 @@ def generar_pdf_presupuesto_streamlit(presupuesto_dict: dict) -> dict:
             total=f"{presupuesto['total_con_iva']:.2f}"
         )
         
-        # Generar PDF con xhtml2pdf
         nombre_archivo = f"presupuesto_{cliente['nombre'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         os.makedirs("data/presupuestos", exist_ok=True)
         ruta_pdf = f"data/presupuestos/{nombre_archivo}"
         
-        # Convertir HTML a PDF
         with open(ruta_pdf, "wb") as pdf_file:
             pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
         
@@ -719,49 +598,15 @@ def generar_pdf_factura_streamlit(presupuesto_dict: dict) -> dict:
         detalles = presupuesto_dict["detalles_trabajo"]
         presupuesto = presupuesto_dict["presupuesto"]
         
-        # Configurar Jinja2
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('factura_template.html.j2')
         
-        # Datos
         factura_numero = f"FAC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         fecha_actual = datetime.now().strftime("%d/%m/%Y")
         
-        # Items
-        items = [
-            {
-                "concepto": f"Pintura {detalles['tipo_pintura'].title()} - {detalles['tipo_trabajo'].title()}",
-                "cantidad": f"{detalles['area_m2']} m²",
-                "precio_unitario": f"€{presupuesto['costo_material'] / detalles['area_m2']:.2f}",
-                "importe": f"€{presupuesto['costo_material']:.2f}"
-            },
-            {
-                "concepto": "Mano de obra especializada",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costo_mano_obra']:.2f}",
-                "importe": f"€{presupuesto['costo_mano_obra']:.2f}"
-            },
-            {
-                "concepto": "Preparación y acabados",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['preparación']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['preparación']:.2f}"
-            },
-            {
-                "concepto": "Transporte",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['transporte']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['transporte']:.2f}"
-            },
-            {
-                "concepto": "Limpieza final",
-                "cantidad": "1",
-                "precio_unitario": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}",
-                "importe": f"€{presupuesto['costos_adicionales']['limpieza_final']:.2f}"
-            }
-        ]
+        # Generar items usando la función helper
+        items = generate_pdf_items(presupuesto_dict)
         
-        # Renderizar
         html_content = template.render(
             factura_numero=factura_numero,
             fecha=fecha_actual,
@@ -775,12 +620,10 @@ def generar_pdf_factura_streamlit(presupuesto_dict: dict) -> dict:
             total=f"{presupuesto['total_con_iva']:.2f}"
         )
         
-        # Generar PDF con xhtml2pdf
         nombre_archivo = f"factura_{cliente['nombre'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         os.makedirs("data/facturas", exist_ok=True)
         ruta_pdf = f"data/facturas/{nombre_archivo}"
         
-        # Convertir HTML a PDF
         with open(ruta_pdf, "wb") as pdf_file:
             pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
         
@@ -804,9 +647,7 @@ def generar_pdf_factura_streamlit(presupuesto_dict: dict) -> dict:
         }
 
 
-# ============================================================================
-# 3. EJEMPLO DE USO
-# ============================================================================
+# --- Ejemplo de Uso ---
 
 if __name__ == "__main__":
     agent = AutonomousPresupuestoAgent()
