@@ -490,5 +490,3 @@ https://youtu.be/hSiv7kci-HY
 https://cloud.langfuse.com/project/cmiqbe7r8002bad07w9ce2qsw/traces/a9b452f8f21a08925643ff6363d8b2fd?timestamp=2025-12-10T15:54:59.691Z
 
 https://cloud.langfuse.com/project/cmiqbe7r8002bad07w9ce2qsw/traces/7a30102ab44de54f001cd26cbbba2057?timestamp=2025-12-10T15:54:35.586Z
-
-### Link hacia el despliegue
