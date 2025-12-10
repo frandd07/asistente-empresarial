@@ -480,34 +480,15 @@ graph TB
 
 ---
 
-## 7. Conclusiones
 
-### Impacto del PLN en el Proyecto
+### Link hacia el vídeo de demostración
 
-1. **Usabilidad**: Interfaz natural que no requiere capacitación
-2. **Eficiencia**: Reduce tiempo de creación de presupuestos de 10min a 2min
-3. **Precisión**: Validación automática de datos reduce errores
-4. **Escalabilidad**: El sistema aprende del historial acumulado
-5. **Flexibilidad**: Acepta múltiples formas de expresar la misma solicitud
+https://youtu.be/hSiv7kci-HY
 
-### Ventajas Técnicas
+### Link hacia las trazas de langfuse
 
-- ✅ **Modularidad**: Agentes especializados independientes
-- ✅ **Mantenibilidad**: Código organizado por responsabilidades
-- ✅ **Observabilidad**: Trazas completas con Langfuse
-- ✅ **Rendimiento**: Gemini 2.5 Flash ofrece respuestas < 2s
-- ✅ **Costo-beneficio**: ~$5-15/mes para uso moderado
+https://cloud.langfuse.com/project/cmiqbe7r8002bad07w9ce2qsw/traces/a9b452f8f21a08925643ff6363d8b2fd?timestamp=2025-12-10T15:54:59.691Z
 
-### Próximos Pasos
+https://cloud.langfuse.com/project/cmiqbe7r8002bad07w9ce2qsw/traces/7a30102ab44de54f001cd26cbbba2057?timestamp=2025-12-10T15:54:35.586Z
 
-1. Fine-tuning de embeddings para dominio específico de pinturas
-2. Integración con sistema de contabilidad
-3. Chatbot multicanal (WhatsApp, email)
-4. Dashboard de analytics sobre conversaciones
-5. Sistema de recomendaciones basado en historial
-
----
-
-**Documento elaborado para cumplimiento de rúbrica académica**  
-**Versión:** 1.0  
-**Última actualización:** 04/12/2025
+### Link hacia el despliegue
