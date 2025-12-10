@@ -42,9 +42,10 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
         else:
             print(f"📄 Archivo no existe, se creará uno nuevo")
         
-        # Buscar entrada existente por NIF (más robusto que buscar por todos los campos)
-        # Patrón más simple: buscar cualquier entrada con el mismo NIF
-        patron_entrada = rf"## .*? - {re.escape(nombre)} \(.*?\).*?\*\*NIF/CIF:\*\* {re.escape(nif)}.*?---"
+        # Buscar entrada existente por NIF
+        # Patrón muy específico: captura desde ## hasta el siguiente --- sin capturar más entradas
+        # [^#] asegura que no capture otra entrada que empiece con ##
+        patron_entrada = rf"## [^\n]*{re.escape(nombre)}[^\n]*\n\n\*\*Cliente:\*\*[^\n]*\n\*\*NIF/CIF:\*\* {re.escape(nif)}\n(?:.*?\n)*?\n---"
         
         # Buscar coincidencia
         coincidencia = re.search(patron_entrada, contenido_existente, re.DOTALL)
@@ -54,6 +55,7 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
             entrada_vieja = coincidencia.group(0)
             print(f"🔄 Actualizando entrada existente para {nombre} (NIF: {nif})")
             print(f"   Entrada vieja: {len(entrada_vieja)} caracteres")
+            print(f"   Primeros 100 caracteres: {entrada_vieja[:100]}")
             
             # Formatear la entrada actualizada
             entrada_nueva = f"""## {estado} - {nombre} ({fecha_actual})
@@ -89,6 +91,7 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
                 }
             
             print(f"   Contenido actualizado: {len(contenido_actualizado)} caracteres")
+            print(f"   Diferencia: {len(contenido_actualizado) - len(contenido_existente)} caracteres")
             
             # Sobrescribir el archivo con el contenido actualizado
             with open(archivo_path, "w", encoding="utf-8") as f:

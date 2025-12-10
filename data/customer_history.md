@@ -2,74 +2,39 @@
 
 ---
 
-## Factura Pagada - Antonio Jarana (10/12/2025 16:38)
 
-**Cliente:** Antonio Jarana
-**NIF/CIF:** 76598765Q
-**Email:** antonio@email.com
-**Dirección:** calle lobo,98
+## Factura Pagada - Erik Lamela Rios (10/12/2025 16:52)
+
+**Cliente:** Erik Lamela Rios
+**NIF/CIF:** 87640987Q
+**Email:** No especificado
+**Dirección:** calle toldo 22 en sevilla 76589
 
 **Detalles del trabajo:**
-- Área: 120.0 m²
+- Área: 232.0 m²
 - Tipo de trabajo: interior
 - Tipo de pintura: acrílica
 - Zona: Interior
 
-**Total con IVA:** €2318.36
+**Total con IVA:** €4391.82
 **Estado actual:** Factura Pagada
 
 ---
 
-## Presupuestado - Manolo el Loco (10/12/2025 16:37)
+## Facturado y Pendiente de Pago - Carlos Bacca (10/12/2025 16:55)
 
-**Cliente:** Manolo el Loco
-**NIF/CIF:** 65789876Q
+**Cliente:** Carlos Bacca
+**NIF/CIF:** 65490876W
 **Email:** No especificado
-**Dirección:** calle solera 44
+**Dirección:** Cadiz calle yoyo,23 cp 789876
 
 **Detalles del trabajo:**
-- Área: 333.0 m²
+- Área: 111.0 m²
 - Tipo de trabajo: fachada
 - Tipo de pintura: plástica
 - Zona: Interior
 
-**Total con IVA:** €6215.77
-**Estado actual:** Presupuestado
-
----
-
-## Presupuestado - Pepe Tornado (10/12/2025 16:30)
-
-**Cliente:** Pepe Tornado
-**NIF/CIF:** 76598765R
-**Email:** No especificado
-**Dirección:** Calle iu 33
-
-**Detalles del trabajo:**
-- Área: 765.0 m²
-- Tipo de trabajo: fachada
-- Tipo de pintura: plástica
-- Zona: Interior
-
-**Total con IVA:** €14152.8
-**Estado actual:** Presupuestado
-
----
-
-## Presupuestado - Manuel Jesus Vera (10/12/2025 16:39)
-
-**Cliente:** Manuel Jesus Vera
-**NIF/CIF:** 65789764T
-**Email:** No especificado
-**Dirección:** calle guti 98
-
-**Detalles del trabajo:**
-- Área: 100.0 m²
-- Tipo de trabajo: fachada
-- Tipo de pintura: acrilica
-- Zona: Interior
-
-**Total con IVA:** €2226.4
-**Estado actual:** Presupuestado
+**Total con IVA:** €2136.3
+**Estado actual:** Facturado y Pendiente de Pago
 
 ---

@@ -1,0 +1,33 @@
+{
+    "presupuesto_numero": "PRES-20251210165056",
+    "cliente": {
+        "nombre": "Erik Lamela Rios",
+        "nif": "87640987Q",
+        "email": "No especificado",
+        "direccion": "calle toldo 22 en sevilla 76589"
+    },
+    "detalles_trabajo": {
+        "area_m2": 232.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "interior",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 2784.0,
+        "costo_mano_obra": 348.0,
+        "costos_adicionales": {
+            "preparación": 417.6,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 3629.6,
+        "total_sin_iva": 3629.6,
+        "iva_21": 762.22,
+        "total_con_iva": 4391.82
+    },
+    "timestamp": "2025-12-10T16:50:56.349008",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pagada",
+    "fechaFacturacion": "2025-12-10T16:51:32.875224",
+    "fechaPago": "2025-12-10T16:52:19.891611"
+}
