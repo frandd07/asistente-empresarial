@@ -1,0 +1,32 @@
+{
+    "presupuesto_numero": "PRES-20251210165436",
+    "cliente": {
+        "nombre": "Carlos Bacca",
+        "nif": "65490876W",
+        "email": "No especificado",
+        "direccion": "Cadiz calle yoyo,23 cp 789876"
+    },
+    "detalles_trabajo": {
+        "area_m2": 111.0,
+        "tipo_pintura": "plástica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 1320.9,
+        "costo_mano_obra": 166.5,
+        "costos_adicionales": {
+            "preparación": 198.13,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 1765.53,
+        "total_sin_iva": 1765.53,
+        "iva_21": 370.76,
+        "total_con_iva": 2136.3
+    },
+    "timestamp": "2025-12-10T16:54:36.939755",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pendiente",
+    "fechaFacturacion": "2025-12-10T16:55:01.107398"
+}
