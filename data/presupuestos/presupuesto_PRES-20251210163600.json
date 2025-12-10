@@ -1,0 +1,33 @@
+{
+    "presupuesto_numero": "PRES-20251210163600",
+    "cliente": {
+        "nombre": "Antonio Jarana",
+        "nif": "76598765Q",
+        "email": "antonio@email.com",
+        "direccion": "calle lobo,98"
+    },
+    "detalles_trabajo": {
+        "area_m2": 120.0,
+        "tipo_pintura": "acrílica",
+        "tipo_trabajo": "interior",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 1440.0,
+        "costo_mano_obra": 180.0,
+        "costos_adicionales": {
+            "preparación": 216.0,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 1916.0,
+        "total_sin_iva": 1916.0,
+        "iva_21": 402.36,
+        "total_con_iva": 2318.36
+    },
+    "timestamp": "2025-12-10T16:36:00.000000",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pagada",
+    "fechaFacturacion": "2025-12-10T16:37:30.310094",
+    "fechaPago": "2025-12-10T16:38:02.249844"
+}

@@ -1,0 +1,32 @@
+{
+    "presupuesto_numero": "PRES-20251210162944",
+    "cliente": {
+        "nombre": "Pepe Tornado",
+        "nif": "76598765Q",
+        "email": "No especificado",
+        "direccion": "Calle iu 33"
+    },
+    "detalles_trabajo": {
+        "area_m2": 765.0,
+        "tipo_pintura": "plástica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 9103.5,
+        "costo_mano_obra": 1147.5,
+        "costos_adicionales": {
+            "preparación": 1365.52,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 11696.52,
+        "total_sin_iva": 11696.52,
+        "iva_21": 2456.27,
+        "total_con_iva": 14152.8
+    },
+    "timestamp": "2025-12-10T16:29:44.772092",
+    "estado": "Facturado y Pendiente de Pago",
+    "estadoPago": "Pendiente",
+    "fechaFacturacion": "2025-12-10T16:30:15.012767"
+}

@@ -1,0 +1,30 @@
+{
+    "presupuesto_numero": "PRES-20251210163700",
+    "cliente": {
+        "nombre": "Manolo el Loco",
+        "nif": "65789876Q",
+        "email": "No especificado",
+        "direccion": "calle solera 44"
+    },
+    "detalles_trabajo": {
+        "area_m2": 333.0,
+        "tipo_pintura": "plástica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 4995.0,
+        "costo_mano_obra": 499.5,
+        "costos_adicionales": {
+            "preparación": 749.25,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 6323.75,
+        "total_sin_iva": 5137.0,
+        "iva_21": 1078.77,
+        "total_con_iva": 6215.77
+    },
+    "timestamp": "2025-12-10T16:37:00.000000",
+    "estado": "Presupuestado"
+}

@@ -1,0 +1,30 @@
+{
+    "presupuesto_numero": "PRES-20251210163905",
+    "cliente": {
+        "nombre": "Manuel Jesus Vera",
+        "nif": "65789764T",
+        "email": "No especificado",
+        "direccion": "calle guti 98"
+    },
+    "detalles_trabajo": {
+        "area_m2": 100.0,
+        "tipo_pintura": "acrilica",
+        "tipo_trabajo": "fachada",
+        "zona": "Interior"
+    },
+    "presupuesto": {
+        "costo_material": 1400.0,
+        "costo_mano_obra": 150.0,
+        "costos_adicionales": {
+            "preparación": 210.0,
+            "transporte": 50.0,
+            "limpieza_final": 30.0
+        },
+        "subtotal_sin_ganancia": 1840.0,
+        "total_sin_iva": 1840.0,
+        "iva_21": 386.4,
+        "total_con_iva": 2226.4
+    },
+    "timestamp": "2025-12-10T16:39:05.496993",
+    "estado": "Presupuestado"
+}

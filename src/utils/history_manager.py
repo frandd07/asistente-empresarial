@@ -38,17 +38,22 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
         if os.path.exists(archivo_path):
             with open(archivo_path, "r", encoding="utf-8") as f:
                 contenido_existente = f.read()
-
-        # Buscar si ya existe una entrada para este cliente y trabajo
-        # Patrón para buscar entradas del mismo cliente (NIF) con los mismos detalles de trabajo
-        patron_entrada = rf"## .*? - {re.escape(nombre)} \(.*?\).*?\*\*NIF/CIF:\*\* {re.escape(nif)}.*?- Área: {re.escape(str(superficie))} m²\s*- Tipo de trabajo: {re.escape(tipo_trabajo)}\s*- Tipo de pintura: {re.escape(tipo_pintura)}\s*- Zona: {re.escape(zona)}.*?---"
+            print(f"📄 Archivo existente leído: {len(contenido_existente)} caracteres")
+        else:
+            print(f"📄 Archivo no existe, se creará uno nuevo")
+        
+        # Buscar entrada existente por NIF (más robusto que buscar por todos los campos)
+        # Patrón más simple: buscar cualquier entrada con el mismo NIF
+        patron_entrada = rf"## .*? - {re.escape(nombre)} \(.*?\).*?\*\*NIF/CIF:\*\* {re.escape(nif)}.*?---"
         
         # Buscar coincidencia
         coincidencia = re.search(patron_entrada, contenido_existente, re.DOTALL)
 
         if coincidencia:
-            # Ya existe una entrada para este cliente y trabajo -> ACTUALIZAR
+            # Ya existe una entrada para este cliente -> ACTUALIZAR
             entrada_vieja = coincidencia.group(0)
+            print(f"🔄 Actualizando entrada existente para {nombre} (NIF: {nif})")
+            print(f"   Entrada vieja: {len(entrada_vieja)} caracteres")
             
             # Formatear la entrada actualizada
             entrada_nueva = f"""## {estado} - {nombre} ({fecha_actual})
@@ -72,6 +77,20 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
             # Reemplazar la entrada vieja con la nueva
             contenido_actualizado = contenido_existente.replace(entrada_vieja, entrada_nueva)
             
+            # Validación: asegurar que el contenido actualizado no esté vacío
+            if len(contenido_actualizado) < len(entrada_nueva):
+                print(f"⚠️ ERROR: El contenido actualizado es más pequeño que la entrada nueva!")
+                print(f"   Contenido original: {len(contenido_existente)} caracteres")
+                print(f"   Contenido actualizado: {len(contenido_actualizado)} caracteres")
+                print(f"   Entrada nueva: {len(entrada_nueva)} caracteres")
+                return {
+                    "estado": "error",
+                    "error": "Error interno: contenido actualizado inválido"
+                }
+            
+            print(f"   Contenido actualizado: {len(contenido_actualizado)} caracteres")
+            
+            # Sobrescribir el archivo con el contenido actualizado
             with open(archivo_path, "w", encoding="utf-8") as f:
                 f.write(contenido_actualizado)
 
@@ -83,6 +102,7 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
             }
         else:
             # No existe -> CREAR NUEVA ENTRADA
+            print(f"➕ Creando nueva entrada para {nombre} (NIF: {nif})")
             entrada = f"""
 ## {estado} - {nombre} ({fecha_actual})
 
@@ -103,9 +123,24 @@ def guardar_presupuesto_en_historial(presupuesto_dict: dict, archivo_path: str =
 ---
 """
 
-            # Escribir la entrada en el archivo de historial
+            # Si el archivo no existe, crearlo con encabezado
+            if not os.path.exists(archivo_path):
+                print(f"   Creando archivo nuevo con encabezado")
+                with open(archivo_path, "w", encoding="utf-8") as f:
+                    f.write("# Historial de Clientes\n\n---\n")
+                contenido_existente = "# Historial de Clientes\n\n---\n"
+            
+            print(f"   Contenido actual antes de agregar: {len(contenido_existente)} caracteres")
+            print(f"   Nueva entrada a agregar: {len(entrada)} caracteres")
+            
+            # Agregar la nueva entrada al final del archivo
             with open(archivo_path, "a", encoding="utf-8") as f:
                 f.write(entrada)
+            
+            # Verificar que se escribió correctamente
+            with open(archivo_path, "r", encoding="utf-8") as f:
+                contenido_final = f.read()
+            print(f"   Contenido final después de agregar: {len(contenido_final)} caracteres")
 
             print(f"✅ Nueva entrada en historial creada para el cliente: {nombre}")
             
